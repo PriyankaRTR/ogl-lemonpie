@@ -13,6 +13,8 @@ ImGui_Wrapper::ImGui_Wrapper(HWND hwnd, ImGuiIO& newRef) : io(newRef)
 	show_demo_window = true;
 	show_another_window = false;
 	clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	matrixToDisplay = vmath::mat4::identity();
+	inputCameraAngle = 90.0;
 }
 
 ImGui_Wrapper::~ImGui_Wrapper()
@@ -63,7 +65,7 @@ void ImGui_Wrapper::gameLoopUIUpdatesImGui(ImGuiContext* newCtx)
 		ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
 		ImGui::Checkbox("Another Window", &show_another_window);
 
-		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+		ImGui::SliderFloat("CameraAngle", &inputCameraAngle, 360.0f, 0.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 		ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
 		if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
@@ -72,7 +74,49 @@ void ImGui_Wrapper::gameLoopUIUpdatesImGui(ImGuiContext* newCtx)
 		ImGui::Text("counter = %d", counter);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+
+		if (ImGui::BeginTable("table1", 4))
+		{
+			for (int row = 0; row < 4; row++)
+			{
+				ImGui::TableNextRow();
+				for (int column = 0; column < 4; column++)
+				{
+				/*	ImGui::TableSetColumnIndex(column);
+					ImGui::Text("Row %d Column %d", row, column);*/
+					ImGui::TableSetColumnIndex(column);
+					ImGui::Text("Col %d : %f", column, matrixToDisplay[row][column]);
+				}
+			}
+			ImGui::EndTable();
+		}
+
+		//if (ImGui::BeginTable("table1", 3))
+		//{
+		//	for (int row = 0; row < 4; row++)
+		//	{
+		//		ImGui::TableNextRow();
+		//		for (int column = 0; column < 3; column++)
+		//		{
+		//			ImGui::TableSetColumnIndex(column);
+		//			ImGui::Text("Row %d Column %d", row, column);
+		//		}
+		//	}
+		//	ImGui::EndTable();
+		//}
+
+		if (ImGui::IsMousePosValid())
+			ImGui::Text("Mouse pos: (%g, %g)", io.MousePos.x, io.MousePos.y);
+		else
+			ImGui::Text("Mouse pos: <INVALID>");
+		ImGui::Text("Mouse delta: (%g, %g)", io.MouseDelta.x, io.MouseDelta.y);
+		ImGui::Text("Mouse down:");
+		for (int i = 0; i < IM_ARRAYSIZE(io.MouseDown); i++) if (ImGui::IsMouseDown(i)) { ImGui::SameLine(); ImGui::Text("b%d (%.02f secs)", i, io.MouseDownDuration[i]); }
+		ImGui::Text("Mouse wheel: %.1f", io.MouseWheel);
+
 		ImGui::End();
+
+
 	}
 
 	// 3. Show another simple window.
@@ -100,4 +144,22 @@ bool ImGui_Wrapper::cleanUpImGui(void)
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 	return true;
+}
+
+
+void ImGui_Wrapper::setMatrix(vmath::mat4& newMatrix)
+{
+
+	for (int row = 0; row < 4; row++)
+	{
+		for (int column = 0; column < 4; column++)
+		{
+			matrixToDisplay[row][column] = newMatrix[row][column];
+		}
+	}
+}
+
+float ImGui_Wrapper::getInputCameraAngle(void)
+{
+	return inputCameraAngle;
 }

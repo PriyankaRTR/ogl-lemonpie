@@ -5,13 +5,15 @@
 // - Getting Started      https://dearimgui.com/getting-started
 // - Documentation        https://dearimgui.com/docs (same as your local docs/ folder).
 // - Introduction, links and more at the top of imgui.cpp
+#include "vmath.h"
+#pragma once
 
 #include <windows.h>
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_win32.h"
 
-#pragma once
+
 
 
 class ImGui_Wrapper
@@ -24,6 +26,8 @@ private:
 	bool show_demo_window;
 	bool show_another_window;
 	ImVec4 clear_color;
+	vmath::mat4 matrixToDisplay;
+	float inputCameraAngle;
 
 public:
 	ImGui_Wrapper(HWND hwnd, ImGuiIO& newRef);
@@ -34,6 +38,8 @@ public:
 	bool cleanUpImGui(void);
 	
 	// write get/sets here
+	void setMatrix(vmath::mat4& newMatrix);
+	float getInputCameraAngle(void);
 
 
 };

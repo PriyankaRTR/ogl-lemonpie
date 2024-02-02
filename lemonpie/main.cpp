@@ -35,7 +35,7 @@
 
 using namespace vmath;
 
-#define OBJ_FILE_PATH "3DModels\\MonkeyHead.obj"
+#define OBJ_FILE_PATH "3DModels\\singleAeroplane.obj"
 
 
 enum
@@ -89,7 +89,7 @@ GLuint gLKeyPressedUniform;
 mat4 gPerspectiveProjectionMatrix;
 mat4 gOrthographicProjectionMatrix;
 
-GLfloat gAngle = 0.0f;
+GLfloat gAngle = 90.0f;
 
 bool gbAnimate;
 bool gbLight;
@@ -973,22 +973,38 @@ void display(void)
 	// OpenGL Drawing
 	// set all matrices to identity
 	mat4 modelMatrix = mat4::identity();
+	mat4 viewMatrix = mat4::identity();
 	mat4 modelViewMatrix = mat4::identity();
 	mat4 rotationMatrix = mat4::identity();
 
 	//modelMatrix = scale(10.0, 10.0, 10.0);
 	// apply z axis translation to go deep into the screen by -5.0,
 	// so that triangle with same fullscreen co-ordinates, but due to above translation will look small
-	modelMatrix = translate(0.0f, -0.0f, -5.0f);
+	modelMatrix = translate(0.0f, -0.0f, 0.0f);
+
+	// input from ImGui
+	gAngle = ImGuiWrapper->getInputCameraAngle();
+	float radius = 5.0f; // 5.0 MonkeyHead // 50.0 singleAeroplane
+	float y_coord = radius * cos(radians(gAngle));
+	float z_coord = radius * sin(radians(gAngle));
+
+	// this is to calculate tangent OTG. since the camera rotation plane is Y-Z & as per our requirement we want to move around the object keeping Y- as up direction at start
+	// this up direction needs to be updated as we move ahead.
+	// Hence we calculate tangent vector to the circle by taking cross product of the camera vector(normalized) and positive X axis as right direction. 
+	vec3 f = normalize(vec3(0.0, y_coord, z_coord));
+	vec3 up_direction = cross(f, vec3(1.0, 0.0, 0.0));
 
 
 
+	viewMatrix = lookat(vec3(0.0, y_coord, z_coord), vec3(0.0, 0.0, 0.0), up_direction);
+	//viewMatrix = lookat(vec3(z_coord, y_coord, 0.0), vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
 	// all axes rotation by gAngle angle
-	rotationMatrix = rotate(0.0f, gAngle, 0.0f);
+	//rotationMatrix = rotate(0.0f, gAngle, 0.0f);
 
 	// multiply rotation matrix and model matrix to get modelView matrix
-	modelViewMatrix = modelMatrix * rotationMatrix; // ORDER IS IMPORTANT
-
+	//modelViewMatrix = modelMatrix * rotationMatrix; // ORDER IS IMPORTANT
+	modelViewMatrix =  modelViewMatrix * viewMatrix;
+	ImGuiWrapper->setMatrix(modelViewMatrix);
 	// pass modelview matrix to the vertex shader in 'u_model_view_matrix' shader variable
 	// whose position value we already calculated in initialize() by using glGetUniformLocation()
 	glUniformMatrix4fv(gModelViewMatrixUniform, 1, GL_FALSE, modelViewMatrix);
@@ -1018,6 +1034,7 @@ void display(void)
 	glUseProgram(0);
 
 
+	//gAngle++;
 	
 }
 
@@ -1030,18 +1047,17 @@ void resize(int width, int height)
 	fprintf(gpFile, "size w- %d, h- %d\n", width, height);
 	gPerspectiveProjectionMatrix = perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
 
-	//if (width <= height)
-	//	gOrthographicProjectionMatrix = ortho(-100.0f, 100.0f, (-100.0f * (height / width)), (100.0f * (height / width)), -100.0f, 100.0f); //co-ordinates written for glVertex3f() are relative to viewing volume of (-100.0f,100.0f,(-100.0f * (height/width)),(100.0f * (height/width)),-100.0f,100.0f)
-	//else
-	//	gOrthographicProjectionMatrix = ortho(-100.0f, 100.0f, (-100.0f * (width / height)), (100.0f * (width / height)), -100.0f, 100.0f); //co-ordinates written for glVertex3f() are relative to viewing volume of (-100.0f,100.0f,(-100.0f * (height/width)),(100.0f * (height/width)),-100.0f,100.0f) 
 }
 
 void spin(void)
 {
 	// code
-	gAngle = gAngle + 1.0f;
-	if (gAngle >= 360.0f)
-		gAngle = gAngle - 360.0f;
+	//gAngle = gAngle + 1.0f;
+	//if (gAngle >= 360.0f)
+	//	gAngle = gAngle - 360.0f;
+	gAngle = gAngle - 1.0f;
+	if (gAngle <= 0.0f)
+		gAngle = gAngle + 360.0f;
 }
 
 void uninitialize(void)
