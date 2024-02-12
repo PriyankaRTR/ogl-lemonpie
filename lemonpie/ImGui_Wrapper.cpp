@@ -1,3 +1,4 @@
+#include <stdio.h> // for FILE I/O
 #include "ImGui_Wrapper.h"
 	
 
@@ -15,6 +16,11 @@ ImGui_Wrapper::ImGui_Wrapper(HWND hwnd, ImGuiIO& newRef) : io(newRef)
 	clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	matrixToDisplay = vmath::mat4::identity();
 	inputCameraAngle = 90.0;
+	//mouseOffsets = { 0.0,0.0 };
+	float bal= io.DeltaTime;
+	mouseWheelOffset = 0.0;
+	mouseDragDelta = { 0.0,0.0};
+
 }
 
 ImGui_Wrapper::~ImGui_Wrapper()
@@ -91,6 +97,8 @@ void ImGui_Wrapper::gameLoopUIUpdatesImGui(ImGuiContext* newCtx)
 			ImGui::EndTable();
 		}
 
+		ImGui::Text("DeltaTime: %f", io.DeltaTime);
+
 		//if (ImGui::BeginTable("table1", 3))
 		//{
 		//	for (int row = 0; row < 4; row++)
@@ -110,9 +118,24 @@ void ImGui_Wrapper::gameLoopUIUpdatesImGui(ImGuiContext* newCtx)
 		else
 			ImGui::Text("Mouse pos: <INVALID>");
 		ImGui::Text("Mouse delta: (%g, %g)", io.MouseDelta.x, io.MouseDelta.y);
+	/*	mouseOffsets.offsetX = io.MouseDelta.x;
+		mouseOffsets.offsetY = io.MouseDelta.y;*/
 		ImGui::Text("Mouse down:");
 		for (int i = 0; i < IM_ARRAYSIZE(io.MouseDown); i++) if (ImGui::IsMouseDown(i)) { ImGui::SameLine(); ImGui::Text("b%d (%.02f secs)", i, io.MouseDownDuration[i]); }
 		ImGui::Text("Mouse wheel: %.1f", io.MouseWheel);
+		mouseWheelOffset += io.MouseWheel;
+
+
+		// Drag operations gets "unlocked" when the mouse has moved past a certain threshold
+		// (the default threshold is stored in io.MouseDragThreshold). You can request a lower or higher
+		// threshold using the second parameter of IsMouseDragging() and GetMouseDragDelta().
+		ImVec2 value_raw = ImGui::GetMouseDragDelta(0, 0.0f);
+		ImVec2 value_with_lock_threshold = ImGui::GetMouseDragDelta(0);
+		ImVec2 mouse_delta = io.MouseDelta;
+		ImGui::Text("GetMouseDragDelta(0):");
+		ImGui::Text("  w/ default threshold: (%.1f, %.1f)", value_with_lock_threshold.x, value_with_lock_threshold.y);
+		ImGui::Text("  w/ zero threshold: (%.1f, %.1f)", value_raw.x, value_raw.y);
+		ImGui::Text("io.MouseDelta: (%.1f, %.1f)", mouse_delta.x, mouse_delta.y);
 
 		ImGui::End();
 
@@ -136,6 +159,7 @@ void ImGui_Wrapper::gameLoopUIUpdatesImGui(ImGuiContext* newCtx)
 	//glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 	//glClear(GL_COLOR_BUFFER_BIT);
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 }
 
 bool ImGui_Wrapper::cleanUpImGui(void)
@@ -162,4 +186,29 @@ void ImGui_Wrapper::setMatrix(vmath::mat4& newMatrix)
 float ImGui_Wrapper::getInputCameraAngle(void)
 {
 	return inputCameraAngle;
+}
+
+float ImGui_Wrapper::getDeltaTime(void)
+{
+	return io.DeltaTime;
+}
+
+//void ImGui_Wrapper::getDeltaMouse(mouseXYOffset& structMouseOffset)
+void ImGui_Wrapper::getDeltaMouse(ImVec2& structMouseOffset)
+{
+	//structMouseOffset.offsetX = io.MouseDelta.x;
+	//structMouseOffset.offsetY = -io.MouseDelta.y; // reversed since y-coordinates range from bottom to top
+	mouseDragDelta = ImGui::GetMouseDragDelta();
+	structMouseOffset = mouseDragDelta; // reversed since y-coordinates range from bottom to top
+}
+
+void ImGui_Wrapper::getMousePos(mousePos& structMousePos)
+{
+	structMousePos.posX = io.MousePos.x;
+	structMousePos.posY = io.MousePos.y;
+}
+
+float ImGui_Wrapper::getDeltaMouseWheel(void)
+{
+	return mouseWheelOffset;
 }

@@ -19,13 +19,16 @@
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_win32.h"
 
+#include "CameraControl.h"
+
 #define IMGUI_WRAPPER_CLASS  // need to fix, take expert advice
 
 #ifdef IMGUI_WRAPPER_CLASS
 #include "ImGui_Wrapper.h" //Priyanka
 #endif
 
-
+#define ENABLE_CAMERA_YAW_ROTATION 1
+#define ENABLE_CAMERA_PITCH_ROTATION 1
 
 #pragma comment(lib,"glew32.lib")
 #pragma comment(lib,"opengl32.lib")
@@ -35,7 +38,7 @@
 
 using namespace vmath;
 
-#define OBJ_FILE_PATH "3DModels\\singleAeroplane.obj"
+#define OBJ_FILE_PATH "3DModels\\MonkeyHead.obj" //singleAeroplane.obj" MonkeyHead.obj
 
 
 enum
@@ -73,6 +76,10 @@ bool gbActiveWindow = false;
 bool gbEscapeKeyIsPressed = false;
 bool gbFullscreen = false;
 
+
+GLfloat currentWidth;
+GLfloat currentHeight;
+
 GLuint gVertexShaderObject;
 GLuint gFragmentShaderObject;
 GLuint gShaderProgramObject;
@@ -89,7 +96,7 @@ GLuint gLKeyPressedUniform;
 mat4 gPerspectiveProjectionMatrix;
 mat4 gOrthographicProjectionMatrix;
 
-GLfloat gAngle = 90.0f;
+GLfloat gAngle = 0.0f;
 
 bool gbAnimate;
 bool gbLight;
@@ -114,12 +121,18 @@ GLfloat* normalsArray;
 
 unsigned long long int fSize;
 
-
+float fov = 45.0f;
+CameraControl* camera;
 
 #ifdef IMGUI_WRAPPER_CLASS
 ImGui_Wrapper* ImGuiWrapper;
 ImGuiContext* ImGui_ctx;
+float deltaTime;
+float xMouseOffset;
+float yMouseOffset;
+ImVec2 mouseOffset = { 0.0,0.0 }; // ImGui datatype
 #endif
+
 
 
 void objDataLoader(void)
@@ -142,7 +155,7 @@ void objDataLoader(void)
 	char* token = NULL;
 	char* face_tokens[NR_FACE_TOKENS];
 
-	// non-null tokens
+	// non-null tokens  
 	int nr_tokens;
 
 	// to hold string associated with each entity
@@ -194,6 +207,8 @@ void objDataLoader(void)
 			while (token = strtok(NULL, sep_space))
 			{
 				if (strlen(token) < 3)
+					break;
+				if (nr_tokens == 3)
 					break;
 				face_tokens[nr_tokens] = token;
 				nr_tokens++;
@@ -318,6 +333,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	void uninitialize(void);
 	void display(void);
 	void spin(void);
+	void updatefov(float yOffset);
 
 	//variable declaration
 	WNDCLASSEX wndclass;
@@ -382,8 +398,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	initialize();
 
 	/*initImGui(hwnd);*/
-
 	
+
+	mouseOffset.x = 0.0;
+	mouseOffset.y = 0.0;
 #ifdef IMGUI_WRAPPER_CLASS  // IMGUI Initialization
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -403,6 +421,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		
 #endif
 
+	camera = new CameraControl(0.0f, 0.0f, 10.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+
 	//Message Loop
 	while (bDone == false) //Parallel to glutMainLoop();
 	{
@@ -418,14 +438,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		}
 		else
 		{
+#ifdef IMGUI_WRAPPER_CLASS
+			// update deltaTime
+			// To make camera movement independant of the processing power of the machine
+			deltaTime = ImGuiWrapper->getDeltaTime();
 
+			// considering mouse drag delta instead of only mouse delta, in development phase
+			ImGuiWrapper->getDeltaMouse(mouseOffset);
+			camera->processMouseDrag(mouseOffset);
+
+#endif
+			camera->processMouseWheel(ImGuiWrapper->getDeltaMouseWheel());
+			updatefov(ImGuiWrapper->getDeltaMouseWheel()); // for zoom-in/ zoom-out
+			fprintf(gpFile, "MouseWheelOffset: %f\n", ImGuiWrapper->getDeltaMouseWheel());
 			// rendring function
 			display();
 #ifdef IMGUI_WRAPPER_CLASS
 			ImGuiWrapper->gameLoopUIUpdatesImGui(ImGui_ctx);
 #endif
 			SwapBuffers(ghdc);
-
+			//fprintf(gpFile, "mouseOffset Log : %f, %f\n", mouseOffset.offsetX, mouseOffset.offsetY);
 
 			if (gbAnimate == true)
 				spin();
@@ -468,7 +500,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, iMsg, wParam, lParam))
 		return true;
-
 
 	//code
 	switch (iMsg)
@@ -527,6 +558,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				bIsLKeyPressed = false;
 			}
 			break;
+
+			//here delta time is used to get the same performance independant of the processing power of the machine
+			//ref - https://learnopengl.com/Getting-started/Camera 
+			//"Graphics applications and games usually keep track of a deltatime variable that stores the time it took to render the last frame. 
+			// We then multiply all velocities with this deltaTime value. The result is that when we have a large deltaTime in a frame, 
+			// meaning that the last frame took longer than average, the velocity for that frame will also be a bit higher to balance it all out. 
+			// When using this approach it does not matter if you have a very fast or slow pc, the velocity of the camera will be balanced out accordingly so each user will have the same experience."
+		case VK_UP:
+			camera->processKeyInputs(FORWARD, deltaTime);//cameraPos += (cameraSpeed * deltaTime) * cameraFront;
+			break;
+
+		case VK_DOWN:
+			camera->processKeyInputs(BACKWARD, deltaTime);//cameraPos -= (cameraSpeed * deltaTime) * cameraFront;
+			break;
+
+		case VK_RIGHT:
+			camera->processKeyInputs(RIGHT, deltaTime);//cameraPos += vmath::normalize(vmath::cross(cameraFront, cameraUp)) * (cameraSpeed * deltaTime);
+			break;
+
+		case VK_LEFT:
+			camera->processKeyInputs(LEFT, deltaTime);//cameraPos -= vmath::normalize(vmath::cross(cameraFront, cameraUp)) * (cameraSpeed * deltaTime);
+			break;
+
 		default:
 			break;
 		}
@@ -980,30 +1034,33 @@ void display(void)
 	//modelMatrix = scale(10.0, 10.0, 10.0);
 	// apply z axis translation to go deep into the screen by -5.0,
 	// so that triangle with same fullscreen co-ordinates, but due to above translation will look small
-	modelMatrix = translate(0.0f, -0.0f, 0.0f);
+	modelMatrix = translate(0.0f, 0.0f, 0.0f);
 
-	// input from ImGui
-	gAngle = ImGuiWrapper->getInputCameraAngle();
+	 //input from ImGui
+	//gAngle = ImGuiWrapper->getInputCameraAngle();
 	float radius = 5.0f; // 5.0 MonkeyHead // 50.0 singleAeroplane
 	float y_coord = radius * cos(radians(gAngle));
 	float z_coord = radius * sin(radians(gAngle));
 
-	// this is to calculate tangent OTG. since the camera rotation plane is Y-Z & as per our requirement we want to move around the object keeping Y- as up direction at start
-	// this up direction needs to be updated as we move ahead.
-	// Hence we calculate tangent vector to the circle by taking cross product of the camera vector(normalized) and positive X axis as right direction. 
+	 //this is to calculate tangent OTG. since the camera rotation plane is Y-Z & as per our requirement we want to move around the object keeping Y- as up direction at start
+	 //this up direction needs to be updated as we move ahead.
+	 //Hence we calculate tangent vector to the circle by taking cross product of the camera vector(normalized) and positive X axis as right direction. 
 	vec3 f = normalize(vec3(0.0, y_coord, z_coord));
 	vec3 up_direction = cross(f, vec3(1.0, 0.0, 0.0));
 
-
-
-	viewMatrix = lookat(vec3(0.0, y_coord, z_coord), vec3(0.0, 0.0, 0.0), up_direction);
+	viewMatrix = camera->getLookAtMatrix();
+	//viewMatrix = lookat(cameraPos, cameraPos + cameraFront, cameraUp);
+	//viewMatrix = lookat(vec3(0.0, y_coord, z_coord), vec3(0.0, 0.0, 0.0), up_direction);
 	//viewMatrix = lookat(vec3(z_coord, y_coord, 0.0), vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
 	// all axes rotation by gAngle angle
-	//rotationMatrix = rotate(0.0f, gAngle, 0.0f);
+	rotationMatrix = rotate(0.0f, gAngle, 0.0f);
+
+
 
 	// multiply rotation matrix and model matrix to get modelView matrix
 	//modelViewMatrix = modelMatrix * rotationMatrix; // ORDER IS IMPORTANT
-	modelViewMatrix =  modelViewMatrix * viewMatrix;
+	modelMatrix = modelMatrix* rotationMatrix;
+	modelViewMatrix = viewMatrix * modelMatrix;
 	ImGuiWrapper->setMatrix(modelViewMatrix);
 	// pass modelview matrix to the vertex shader in 'u_model_view_matrix' shader variable
 	// whose position value we already calculated in initialize() by using glGetUniformLocation()
@@ -1011,6 +1068,7 @@ void display(void)
 
 	// pass projection matrix to the vertex shader in 'u_projection_matrix' shader variable
 	// whose position value we already calculated in initialize() by using glGetUniformLocation()
+	gPerspectiveProjectionMatrix = perspective(fov, (GLfloat)currentWidth / (GLfloat)currentHeight, 0.1f, 100.0f);
 	glUniformMatrix4fv(gProjectionMatrixUniform, 1, GL_FALSE, gPerspectiveProjectionMatrix);
 	//glUniformMatrix4fv(gProjectionMatrixUniform, 1, GL_FALSE, gOrthographicProjectionMatrix);
 	// *** bind vao ***
@@ -1038,14 +1096,30 @@ void display(void)
 	
 }
 
+
+
+void updatefov(float yOffset)
+{
+	if (yOffset != 0.0)
+	{
+		fov = yOffset;
+		if (fov < 1.0)
+			fov = 1.0;
+		else if (fov > 45.0)
+			fov = 45.0;
+	}
+}
+
 void resize(int width, int height)
 {
 	//code
 	if (height == 0)
 		height = 1;
 	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
+	currentWidth = (GLfloat)width;
+	currentHeight = (GLfloat)height;
 	fprintf(gpFile, "size w- %d, h- %d\n", width, height);
-	gPerspectiveProjectionMatrix = perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
+	gPerspectiveProjectionMatrix = perspective(fov, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
 
 }
 

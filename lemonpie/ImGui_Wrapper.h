@@ -14,6 +14,11 @@
 #include "imgui_impl_win32.h"
 
 
+typedef struct
+{
+	float offsetX;
+	float offsetY;
+}mouseXYOffset;
 
 
 class ImGui_Wrapper
@@ -28,8 +33,24 @@ private:
 	ImVec4 clear_color;
 	vmath::mat4 matrixToDisplay;
 	float inputCameraAngle;
+	float mouseWheelOffset;
+	ImVec2 mouseDragDelta;
+	//mouseXYOffset mouseOffsets;
 
 public:
+
+	typedef struct
+	{
+		float offsetX;
+		float offsetY;
+	}mouseXYOffset;
+
+	typedef struct
+	{
+		float posX;
+		float posY;
+	}mousePos;
+
 	ImGui_Wrapper(HWND hwnd, ImGuiIO& newRef);
 	~ImGui_Wrapper();
 
@@ -40,6 +61,11 @@ public:
 	// write get/sets here
 	void setMatrix(vmath::mat4& newMatrix);
 	float getInputCameraAngle(void);
+	float getDeltaTime(void);
+	//void getDeltaMouse(mouseXYOffset &structMouseOffset);
+	void getDeltaMouse(ImVec2& structMouseOffset);
+	void getMousePos(mousePos& structMousePos); // not used since we are getting readyly calcualted delta
+	float getDeltaMouseWheel(void);
 
 
 };

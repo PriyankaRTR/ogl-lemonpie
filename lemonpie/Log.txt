@@ -1,6 +1,0 @@
-Log File Is Successfully Opened.
-size w- 784, h- 561
-g_vertices:4697 g_texture:5657 g_normals:3386 g_face_tri:9250
-size w- 800, h- 600
-size w- 1920, h- 1017
-Log File Is Successfully Closed.
