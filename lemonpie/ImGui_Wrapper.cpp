@@ -198,7 +198,7 @@ void ImGui_Wrapper::getDeltaMouse(ImVec2& structMouseOffset)
 {
 	//structMouseOffset.offsetX = io.MouseDelta.x;
 	//structMouseOffset.offsetY = -io.MouseDelta.y; // reversed since y-coordinates range from bottom to top
-	mouseDragDelta = ImGui::GetMouseDragDelta();
+	mouseDragDelta = ImGui::GetMouseDragDelta(1.0,0.0);
 	structMouseOffset = mouseDragDelta; // reversed since y-coordinates range from bottom to top
 }
 

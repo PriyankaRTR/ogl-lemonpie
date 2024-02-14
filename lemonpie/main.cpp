@@ -20,6 +20,7 @@
 #include "imgui_impl_win32.h"
 
 #include "CameraControl.h"
+#include "Texture.h";
 
 #define IMGUI_WRAPPER_CLASS  // need to fix, take expert advice
 
@@ -87,9 +88,16 @@ GLuint gShaderProgramObject;
 GLuint gVao_cube;
 GLuint gVbo_cube_position;
 GLuint gVbo_cube_normal;
+GLuint gVbo_cube_texture;
 
 GLuint gModelViewMatrixUniform, gProjectionMatrixUniform;
 GLuint gLdUniform, gKdUniform, gLightPositionUniform;
+GLuint gTextureSamplerUniform;
+
+GLuint gTexture_Kundali;
+GLuint gTexture_Stone;
+
+Texture* texture_MonkeyHead;
 
 GLuint gLKeyPressedUniform;
 
@@ -118,6 +126,7 @@ char filePath[BUFFER_SIZE];
 
 GLfloat* vertexArray;
 GLfloat* normalsArray;
+GLfloat* textureArray;
 
 unsigned long long int fSize;
 
@@ -250,7 +259,7 @@ void objDataLoader(void)
 
 
 
-}
+}   
 
 void processVertexData(void)
 {
@@ -317,6 +326,39 @@ void processNormalsData(void)
 				normalsArray[nArrayIndex++] = g_normals[vi][0];
 				normalsArray[nArrayIndex++] = g_normals[vi][1];
 				normalsArray[nArrayIndex++] = g_normals[vi][2];
+
+			}
+
+		}
+
+	}
+}
+
+void processTextureData(void)
+{
+	unsigned long int size, mallocSize;
+	size = g_face_texture.size();
+	mallocSize = sizeof(GLfloat) * size * 3 * 2;
+	int nArrayIndex = 0;
+	GLfloat arr[9];
+	if (size)
+	{
+		  
+		textureArray = (GLfloat*)malloc(mallocSize);
+
+		for (int i = 0; i < size; i++)
+		{
+			for (int j = 0; j < g_face_texture[i].size(); j++)
+			{
+				int vi = g_face_texture[i][j] - 1;
+
+				arr[0] = g_texture[vi][0];
+				arr[1] = g_texture[vi][1];
+				
+
+				// textures
+				textureArray[nArrayIndex++] = g_texture[vi][0];
+				textureArray[nArrayIndex++] = g_texture[vi][1];
 
 			}
 
@@ -637,6 +679,7 @@ void initialize(void)
 	//function prototypes
 	void uninitialize(void);
 	void resize(int, int);
+	int LoadGLTextures(GLuint * texture, TCHAR imageResourceId[]);
 
 	//variable declarations
 	PIXELFORMATDESCRIPTOR pfd;
@@ -712,6 +755,7 @@ void initialize(void)
 		"\n" \
 		"in vec4 vPosition;" \
 		"in vec3 vNormal;" \
+		"in vec2 vTexture0_Coord;" \
 		"uniform mat4 u_model_view_matrix;" \
 		"uniform mat4 u_projection_matrix;" \
 		"uniform int u_LKeyPressed;" \
@@ -719,6 +763,7 @@ void initialize(void)
 		"uniform vec3 u_Kd;" \
 		"uniform vec4 u_light_position;" \
 		"out vec3 diffuse_light;" \
+		"out vec2 out_texture0_coord;" \
 		"void main(void)" \
 		"{" \
 		"if (u_LKeyPressed == 1)" \
@@ -729,6 +774,7 @@ void initialize(void)
 		"diffuse_light = u_Ld * u_Kd * max(dot(s, tnorm), 0.0);" \
 		"}" \
 		"gl_Position = u_projection_matrix * u_model_view_matrix * vPosition;" \
+		"out_texture0_coord = vTexture0_Coord;"\
 		"}";
 
 	glShaderSource(gVertexShaderObject, 1, (const GLchar**)&vertexShaderSourceCode, NULL);
@@ -766,8 +812,10 @@ void initialize(void)
 		"#version 130" \
 		"\n" \
 		"in vec3 diffuse_light;" \
+		"in vec2 out_texture0_coord;" \
 		"out vec4 FragColor;" \
 		"uniform int u_LKeyPressed;" \
+		"uniform sampler2D u_texture0_sampler;"\
 		"void main(void)" \
 		"{" \
 		"vec4 color;" \
@@ -779,9 +827,9 @@ void initialize(void)
 		"{" \
 		"color = vec4(1.0, 1.0, 1.0, 1.0);" \
 		"}" \
-		"FragColor = color;" \
+		"FragColor = color * texture(u_texture0_sampler, out_texture0_coord);" \
 		"}";
-
+	
 	glShaderSource(gFragmentShaderObject, 1, (const GLchar**)&fragmentShaderSourceCode, NULL);
 
 	// compile shader
@@ -818,6 +866,7 @@ void initialize(void)
 	// pre-link binding of shader program object with vertex shader position attribute
 	glBindAttribLocation(gShaderProgramObject, VDG_ATTRIBUTE_VERTEX, "vPosition");
 	glBindAttribLocation(gShaderProgramObject, VDG_ATTRIBUTE_NORMAL, "vNormal");
+	glBindAttribLocation(gShaderProgramObject, VDG_ATTRIBUTE_TEXTURE0, "vTexture0_Coord");
 
 	// link shader
 	glLinkProgram(gShaderProgramObject);
@@ -849,7 +898,9 @@ void initialize(void)
 
 	gLdUniform = glGetUniformLocation(gShaderProgramObject, "u_Ld");
 	gKdUniform = glGetUniformLocation(gShaderProgramObject, "u_Kd");
-	gLightPositionUniform = glGetUniformLocation(gShaderProgramObject, "u_light_position");;
+	gLightPositionUniform = glGetUniformLocation(gShaderProgramObject, "u_light_position");
+
+	gTextureSamplerUniform = glGetUniformLocation(gShaderProgramObject, "u_texture0_sampler");
 
 	// *** vertices, colors, shader attribs, vbo, vao initializations ***
 	//std::vector<GLfloat> cubeVertices =
@@ -943,6 +994,7 @@ void initialize(void)
 
 	processVertexData();
 	processNormalsData();
+	processTextureData();
 
 	// CUBE CODE
 	// vao
@@ -972,6 +1024,18 @@ void initialize(void)
 	glEnableVertexAttribArray(VDG_ATTRIBUTE_NORMAL);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+		
+
+	// texture vbo
+	glGenBuffers(1, &gVbo_cube_texture);
+	glBindBuffer(GL_ARRAY_BUFFER, gVbo_cube_texture);
+	glBufferData(GL_ARRAY_BUFFER, (fSize * 3 * 2 * 4), textureArray, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(VDG_ATTRIBUTE_TEXTURE0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	glEnableVertexAttribArray(VDG_ATTRIBUTE_TEXTURE0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
 
@@ -986,6 +1050,11 @@ void initialize(void)
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	// We will always cull back faces for better performance
 	//glEnable(GL_CULL_FACE); //////////////////////////////////COMMENTED
+
+	texture_MonkeyHead = new Texture(gTexture_Stone, MAKEINTRESOURCE(IDBITMAP_STONE));
+	texture_MonkeyHead->LoadGLTextures(); // add error check here FE - future enhancements
+	//LoadGLTextures(&gTexture_Kundali, MAKEINTRESOURCE(IDBITMAP_KUNDALI));
+	//LoadGLTextures(&gTexture_Stone, MAKEINTRESOURCE(IDBITMAP_STONE));
 
 	// set background color
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // black
@@ -1014,7 +1083,7 @@ void display(void)
 		glUniform1i(gLKeyPressedUniform, 1);
 
 		glUniform3f(gLdUniform, 1.0f, 1.0f, 1.0f);
-		glUniform3f(gKdUniform, 0.5f, 0.5f, 0.5f);
+		glUniform3f(gKdUniform, 1.0f, 1.0f, 1.0f);//0.5f, 0.5f, 0.5f);
 
 		float lightPosition[] = { 0.0f, 0.0f, 2.0f, 1.0f };
 		glUniform4fv(gLightPositionUniform, 1, (GLfloat*)lightPosition);
@@ -1071,6 +1140,12 @@ void display(void)
 	gPerspectiveProjectionMatrix = perspective(fov, (GLfloat)currentWidth / (GLfloat)currentHeight, 0.1f, 100.0f);
 	glUniformMatrix4fv(gProjectionMatrixUniform, 1, GL_FALSE, gPerspectiveProjectionMatrix);
 	//glUniformMatrix4fv(gProjectionMatrixUniform, 1, GL_FALSE, gOrthographicProjectionMatrix);
+	
+	glActiveTexture(GL_TEXTURE);
+	glBindTexture(GL_TEXTURE_2D, texture_MonkeyHead->getTextureId());
+	glUniform1i(gTextureSamplerUniform, 0);
+
+
 	// *** bind vao ***
 	glBindVertexArray(gVao_cube);
 

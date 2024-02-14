@@ -29,6 +29,7 @@
     <ClCompile Include="ImGui\imgui\imgui_widgets.cpp" />
     <ClCompile Include="ImGui_Wrapper.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraControl.h" />
@@ -42,6 +43,15 @@
     <ClInclude Include="ImGui\imgui\imstb_textedit.h" />
     <ClInclude Include="ImGui\imgui\imstb_truetype.h" />
     <ClInclude Include="ImGui_Wrapper.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Texture.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Textures\Texture.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Textures\Stone.bmp" />
+    <Image Include="Textures\Vijay_Kundali.bmp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
