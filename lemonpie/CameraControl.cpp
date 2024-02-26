@@ -10,7 +10,7 @@ CameraControl::CameraControl(float posX, float posY, float posZ, float tragetX, 
 	cameraUp = vmath::vec3(upDirX, upDirY, upDirZ);
 	cameraYaw = -90.0f;
 	cameraPitch = 0.0;
-	cameraSpeed = 10.0f;
+	cameraSpeed = 1.0f;
 	sensitivity = 0.005f;
 	fov = 45.0f;
 }

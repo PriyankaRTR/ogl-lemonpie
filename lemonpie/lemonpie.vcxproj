@@ -28,7 +28,8 @@
     <ClCompile Include="ImGui\imgui\imgui_tables.cpp" />
     <ClCompile Include="ImGui\imgui\imgui_widgets.cpp" />
     <ClCompile Include="ImGui_Wrapper.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="mainTarrain.cpp" />
+    <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -43,7 +44,7 @@
     <ClInclude Include="ImGui\imgui\imstb_textedit.h" />
     <ClInclude Include="ImGui\imgui\imstb_truetype.h" />
     <ClInclude Include="ImGui_Wrapper.h" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="Terrain.h" />
     <ClInclude Include="Texture.h" />
   </ItemGroup>
   <ItemGroup>

@@ -27,6 +27,7 @@
 #ifdef IMGUI_WRAPPER_CLASS
 #include "ImGui_Wrapper.h" //Priyanka
 #endif
+//#include "Terrain.h"
 
 #define ENABLE_CAMERA_YAW_ROTATION 1
 #define ENABLE_CAMERA_PITCH_ROTATION 1
@@ -367,6 +368,50 @@ void processTextureData(void)
 	}
 }
 
+void processObjData(void)
+{
+	//unsigned long int size, mallocSize;
+	//int vi, ni, ti;
+	//size = g_face_tri.size();
+	//mallocSize = sizeof(GLfloat) * size * 3 * 3;
+	//vertexArray = (GLfloat *)malloc(mallocSize);
+	//size = g_face_normal.size();
+	//mallocSize = sizeof(GLfloat) * size * 3 * 3;
+	//normalsArray = (GLfloat*)malloc(mallocSize);
+	//size = g_face_texture.size();
+	//mallocSize = sizeof(GLfloat) * size * 3 * 2;
+	//textureArray = (GLfloat*)malloc(mallocSize);
+
+	//int nArrayIndex = 0;
+	//GLfloat arr[9];
+
+	//if (size)
+	//{
+	//	for (int i = 0; i < g_face_tri.size(); i++)
+	//	{
+	//		for (int j = 0; j < g_face_tri[i].size(); j++)
+	//		{
+	//			vi = g_face_tri[i][j] - 1;
+	//			ni = g_face_normal[i][j] - 1;
+	//			ti = g_face_texture[i][j] - 1;
+
+	//			vertexArray[nArrayIndex++] = g_vertices[vi][0];
+	//			normalsArray[nArrayIndex] = g_normals[ni][0];
+	//			textureArray[nArrayIndex] = g_texture[ti][0];
+
+	//			vertexArray[nArrayIndex++] = g_vertices[vi][1];
+	//			normalsArray[nArrayIndex] = g_normals[ni][1];
+	//			textureArray[nArrayIndex] = g_texture[ti][1];
+
+	//			vertexArray[nArrayIndex++] = g_vertices[vi][2];
+	//			normalsArray[nArrayIndex] = g_normals[ni][2];				
+
+	//		}
+	//	}
+	//}
+
+}
+
 //main()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
 {
@@ -384,6 +429,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	TCHAR szClassName[] = TEXT("OpenGLPP");
 	bool bDone = false;
 
+	//Terrain* newTerrain = new Terrain(1, 1);
 	//GetModuleFileName(NULL, filePath, BUFFER_SIZE); // to read fully qualified path of .exe. Not used.
 	
 	//code
@@ -434,7 +480,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	SetForegroundWindow(hwnd);
 	SetFocus(hwnd);
 
-	//objDataParser();
+	
 	objDataLoader();
 	//initialize
 	initialize();
@@ -464,6 +510,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 #endif
 
 	camera = new CameraControl(0.0f, 0.0f, 10.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+	
 
 	//Message Loop
 	while (bDone == false) //Parallel to glutMainLoop();
@@ -680,6 +727,7 @@ void initialize(void)
 	void uninitialize(void);
 	void resize(int, int);
 	int LoadGLTextures(GLuint * texture, TCHAR imageResourceId[]);
+	void cleanUp(void);
 
 	//variable declarations
 	PIXELFORMATDESCRIPTOR pfd;
@@ -903,98 +951,12 @@ void initialize(void)
 	gTextureSamplerUniform = glGetUniformLocation(gShaderProgramObject, "u_texture0_sampler");
 
 	// *** vertices, colors, shader attribs, vbo, vao initializations ***
-	//std::vector<GLfloat> cubeVertices =
-	GLfloat* testCubeVertices = (GLfloat*)malloc(sizeof(GLfloat) * 72);
-	GLfloat cubeVertices[] =
-	{
-		1.0f, 1.0f, -1.0f,
-		-1.0f, 1.0f, -1.0f,
-		-1.0f, 1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f,
-
-		1.0f, -1.0f, 1.0f,
-		-1.0f, -1.0f, 1.0f,
-		-1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-
-		1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
-		-1.0f, -1.0f, 1.0f,
-		1.0f, -1.0f, 1.0f,
-
-		1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
-		-1.0f, 1.0f, -1.0f,
-		1.0f, 1.0f, -1.0f,
-
-		-1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f, 1.0f,
-
-		1.0f, 1.0f, -1.0f,
-		1.0f, 1.0f, 1.0f,
-		1.0f, -1.0f, 1.0f,
-		1.0f, -1.0f, -1.0f,
-	};
-
-	for (int i = 0; i < 72; i++)
-	{
-		if (cubeVertices[i] < 0.0f)
-			cubeVertices[i] = cubeVertices[i] + 0.25f;
-		else if (cubeVertices[i] > 0.0f)
-			cubeVertices[i] = cubeVertices[i] - 0.25f;
-		else
-			cubeVertices[i] = cubeVertices[i];
-	}
-
-	int i = 0;
-	for (auto member : cubeVertices)
-	{
-		testCubeVertices[i] = member;
-		i++;
-	}
-	int testSize = 0;
-	testSize = sizeof(testCubeVertices);
-	testSize = sizeof(cubeVertices);
-	const GLfloat cubeNormals[] =
-	{
-		0.0f, 1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-
-		0.0f, -1.0f, 0.0f,
-		0.0f, -1.0f, 0.0f,
-		0.0f, -1.0f, 0.0f,
-		0.0f, -1.0f, 0.0f,
-
-		0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f,
-
-		0.0f, 0.0f, -1.0f,
-		0.0f, 0.0f, -1.0f,
-		0.0f, 0.0f, -1.0f,
-		0.0f, 0.0f, -1.0f,
-
-		-1.0f, 0.0f, 0.0f,
-		-1.0f, 0.0f, 0.0f,
-		-1.0f, 0.0f, 0.0f,
-		-1.0f, 0.0f, 0.0f,
-
-		1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f
-	};
-
-	GLfloat vBuffer = NULL;
-
+	
 	processVertexData();
 	processNormalsData();
 	processTextureData();
+
+	//processObjData();
 
 	// CUBE CODE
 	// vao
@@ -1038,6 +1000,9 @@ void initialize(void)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
+
+
+	cleanUp(); // free heap memory after pushing data to the GPU
 
 	glShadeModel(GL_SMOOTH);
 	// set-up depth buffer
@@ -1211,6 +1176,7 @@ void spin(void)
 
 void uninitialize(void)
 {
+	void cleanUp(void);
 	//UNINITIALIZATION CODE
 	if (gbFullscreen == true)
 	{
@@ -1263,6 +1229,12 @@ void uninitialize(void)
 		gShaderProgramObject = 0;
 	}
 
+
+	if (texture_MonkeyHead)
+	{
+		free(texture_MonkeyHead);
+		texture_MonkeyHead = NULL;
+	}
 	//Deselect the rendering context
 	wglMakeCurrent(NULL, NULL);
 
@@ -1274,6 +1246,20 @@ void uninitialize(void)
 	ReleaseDC(ghwnd, ghdc);
 	ghdc = NULL;
 
+	cleanUp();
+
+
+	if (gpFile)
+	{
+		fprintf(gpFile, "Log File Is Successfully Closed.\n");
+		fclose(gpFile);
+		gpFile = NULL;
+	}
+}
+
+
+void cleanUp(void)
+{
 	if (vertexArray)
 	{
 		// free up memory allocated using malloc or calloc function
@@ -1289,11 +1275,10 @@ void uninitialize(void)
 		normalsArray = NULL;
 	}
 
-
-	if (gpFile)
+	if (textureArray)
 	{
-		fprintf(gpFile, "Log File Is Successfully Closed.\n");
-		fclose(gpFile);
-		gpFile = NULL;
+		// free memory used for normals array
+		free(textureArray);
+		textureArray = NULL;
 	}
 }
