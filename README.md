@@ -1,2 +1,2 @@
 # ogl-lemonpie
-OpenGL experiments for RTR
+OpenGL demos engine to demonstrate various concepts and effects.
