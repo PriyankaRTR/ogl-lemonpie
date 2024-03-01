@@ -2,6 +2,8 @@
 #include <stdio.h> // for FILE I/O
 #include <stdlib.h>
 #include <vector>
+#include"RawModel.h"
+#include"Loader.h"
 
 class Terrain
 {
@@ -16,11 +18,14 @@ private:
 	int iSize;
 	float x;
 	float z;
-	void generateTerrain(void);
+	RawModel* generateTerrain(Loader& loader);
+	RawModel* model;
 
 public:
-	Terrain(int gridX, int gridZ);
+	Terrain(int gridX, int gridZ, Loader& loader);
 	~Terrain();
+	
+	RawModel* getModel(void);
 
 	float* getVertices(void);
 	float* getNormals(void);

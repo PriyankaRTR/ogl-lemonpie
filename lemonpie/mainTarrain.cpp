@@ -21,6 +21,9 @@
 
 #include "CameraControl.h"
 #include "Texture.h";
+#include "Loader.h"
+#include "RawModel.h"
+#include "OBJLoader.h"
 
 #define IMGUI_WRAPPER_CLASS  // need to fix, take expert advice
 
@@ -121,6 +124,9 @@ GLuint location_sampler;
 GLuint gTexture_terrain;
 
 Texture* texture_terrain;
+
+Loader terrainLoader;
+RawModel* terrainModel;
 //*****************
 
 
@@ -128,8 +134,11 @@ Texture* texture_terrain;
 GLuint gTexture_Kundali;
 GLuint gTexture_Stone;
 
+OBJLoader* objLoader;
 Texture* texture_MonkeyHead;
-
+//RawModel MonkeyModel;
+GLuint monkeyVao;
+Loader monkeyLoader;
 GLuint gLKeyPressedUniform;
 
 mat4 gPerspectiveProjectionMatrix;
@@ -460,7 +469,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	TCHAR szClassName[] = TEXT("OpenGLPP");
 	bool bDone = false;
 
-	newTerrain = new Terrain(0, 0);
+	
 	//GetModuleFileName(NULL, filePath, BUFFER_SIZE); // to read fully qualified path of .exe. Not used.
 
 	//code
@@ -512,10 +521,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	SetFocus(hwnd);
 
 
-	objDataLoader();
+
+	//objDataLoader();
 	//initialize
 	initialize();
-
+	objLoader = new OBJLoader();
+	monkeyVao = objLoader->loadObjModel(OBJ_FILE_PATH, monkeyLoader);
 	/*initImGui(hwnd);*/
 
 
@@ -818,6 +829,7 @@ void initialize(void)
 	}
 
 	// GLEW Initialization Code For GLSL ( IMPORTANT : It Must Be Here. Means After Creating OpenGL Context But Before Using Any OpenGL Function )
+	//glewExperimental = GL_TRUE;
 	GLenum glew_error = glewInit();
 	if (glew_error != GLEW_OK)
 	{
@@ -1013,9 +1025,13 @@ void initialize(void)
 	glAttachShader(gShaderProgramObject, gFragmentShaderObject);
 
 	// pre-link binding of shader program object with vertex shader position attribute
-	glBindAttribLocation(gShaderProgramObject, VDG_ATTRIBUTE_VERTEX, "vPosition");
-	glBindAttribLocation(gShaderProgramObject, VDG_ATTRIBUTE_NORMAL, "vNormal");
-	glBindAttribLocation(gShaderProgramObject, VDG_ATTRIBUTE_TEXTURE0, "vTexture0_Coord");
+	//glBindAttribLocation(gShaderProgramObject, VDG_ATTRIBUTE_VERTEX, "vPosition");
+	//glBindAttribLocation(gShaderProgramObject, VDG_ATTRIBUTE_NORMAL, "vNormal");
+	//glBindAttribLocation(gShaderProgramObject, VDG_ATTRIBUTE_TEXTURE0, "vTexture0_Coord");
+
+	glBindAttribLocation(gShaderProgramObject, 0, "vPosition");
+	glBindAttribLocation(gShaderProgramObject, 2, "vNormal");
+	glBindAttribLocation(gShaderProgramObject, 1, "vTexture0_Coord");
 
 	// link shader
 	glLinkProgram(gShaderProgramObject);
@@ -1053,56 +1069,58 @@ void initialize(void)
 
 	// *** vertices, colors, shader attribs, vbo, vao initializations ***
 
-	processVertexData();
-	processNormalsData();
-	processTextureData();
+	//processVertexData();
+	//processNormalsData();
+	//processTextureData();
 
 	//processObjData();
 
 	// CUBE CODE
-	// vao
-	glGenVertexArrays(1, &gVao_cube);
-	glBindVertexArray(gVao_cube);
+	//// vao
+	//glGenVertexArrays(1, &gVao_cube);
+	//glBindVertexArray(gVao_cube);
 
-	// position vbo
-	glGenBuffers(1, &gVbo_cube_position);
-	glBindBuffer(GL_ARRAY_BUFFER, gVbo_cube_position);
-	glBufferData(GL_ARRAY_BUFFER, (fSize * 3 * 3 * 4), vertexArray, GL_STATIC_DRAW); //432 for cube = 12*3*3*4  // 36 for triangle // monkey head 968*3*3*4 = 34848
-
-
-
-	glVertexAttribPointer(VDG_ATTRIBUTE_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
-	glEnableVertexAttribArray(VDG_ATTRIBUTE_VERTEX);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	// normal vbo
-	glGenBuffers(1, &gVbo_cube_normal);
-	glBindBuffer(GL_ARRAY_BUFFER, gVbo_cube_normal);
-	glBufferData(GL_ARRAY_BUFFER, (fSize * 3 * 3 * 4), normalsArray, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(VDG_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
-	glEnableVertexAttribArray(VDG_ATTRIBUTE_NORMAL);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//// position vbo
+	//glGenBuffers(1, &gVbo_cube_position);
+	//glBindBuffer(GL_ARRAY_BUFFER, gVbo_cube_position);
+	//glBufferData(GL_ARRAY_BUFFER, (fSize * 3 * 3 * 4), vertexArray, GL_STATIC_DRAW); //432 for cube = 12*3*3*4  // 36 for triangle // monkey head 968*3*3*4 = 34848
 
 
-	// texture vbo
-	glGenBuffers(1, &gVbo_cube_texture);
-	glBindBuffer(GL_ARRAY_BUFFER, gVbo_cube_texture);
-	glBufferData(GL_ARRAY_BUFFER, (fSize * 3 * 2 * 4), textureArray, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(VDG_ATTRIBUTE_TEXTURE0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	//glVertexAttribPointer(VDG_ATTRIBUTE_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
-	glEnableVertexAttribArray(VDG_ATTRIBUTE_TEXTURE0);
+	//glEnableVertexAttribArray(VDG_ATTRIBUTE_VERTEX);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glBindVertexArray(0);
-	gVao_terrain = loadToVAO(newTerrain->getVertices(), newTerrain->getNormals(), newTerrain->getTextureCoords(), newTerrain->getIndices());
+	//// normal vbo
+	//glGenBuffers(1, &gVbo_cube_normal);
+	//glBindBuffer(GL_ARRAY_BUFFER, gVbo_cube_normal);
+	//glBufferData(GL_ARRAY_BUFFER, (fSize * 3 * 3 * 4), normalsArray, GL_STATIC_DRAW);
 
+	//glVertexAttribPointer(VDG_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	//glEnableVertexAttribArray(VDG_ATTRIBUTE_NORMAL);
+
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+	//// texture vbo
+	//glGenBuffers(1, &gVbo_cube_texture);
+	//glBindBuffer(GL_ARRAY_BUFFER, gVbo_cube_texture);
+	//glBufferData(GL_ARRAY_BUFFER, (fSize * 3 * 2 * 4), textureArray, GL_STATIC_DRAW);
+
+	//glVertexAttribPointer(VDG_ATTRIBUTE_TEXTURE0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	//glEnableVertexAttribArray(VDG_ATTRIBUTE_TEXTURE0);
+
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	//glBindVertexArray(0);
+	//loader = new Loader();
+	newTerrain = new Terrain(0, 0, terrainLoader);
+	//terrainModel = terrainLoader.loadToVAO(newTerrain->getVertices(), newTerrain->getNormals(), newTerrain->getTextureCoords(), newTerrain->getIndices(), newTerrain->getFaceSize());
+	 
 	//cleanUp(); // free heap memory after pushing data to the GPU
 
 	glShadeModel(GL_SMOOTH);
@@ -1117,12 +1135,12 @@ void initialize(void)
 	// We will always cull back faces for better performance
 	//glEnable(GL_CULL_FACE); //////////////////////////////////COMMENTED
 
-	texture_MonkeyHead = new Texture(gTexture_Stone, MAKEINTRESOURCE(IDBITMAP_STONE));
-	texture_MonkeyHead->LoadGLTextures(); // add error check here FE - future enhancements
+	texture_MonkeyHead = new Texture(MAKEINTRESOURCE(IDBITMAP_STONE));
+	gTexture_Stone = texture_MonkeyHead->LoadGLTextures(); // add error check here FE - future enhancements
 	//LoadGLTextures(&gTexture_Kundali, MAKEINTRESOURCE(IDBITMAP_KUNDALI));
 	//LoadGLTextures(&gTexture_Stone, MAKEINTRESOURCE(IDBITMAP_STONE));
-	texture_terrain = new Texture(gTexture_terrain, MAKEINTRESOURCE(IDBITMAP_GRASS));
-	texture_terrain->LoadGLTextures();
+	texture_terrain = new Texture(MAKEINTRESOURCE(IDBITMAP_GRASS));
+	gTexture_terrain = texture_terrain->LoadGLTextures();
 
 	// set background color
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // black
@@ -1217,74 +1235,75 @@ GLuint loadShader(const GLchar* shaderSource, GLenum type)
 }
 
 
-GLuint loadToVAO(GLfloat* vArray, GLfloat* nArray, GLfloat* tArray, int* indices)
-{
-	GLuint createVAO(void);
-	void bindIndicesBuffer(int* indices);
-	void storeDataInAttributeList(GLuint attribNumber, GLuint coordinateSize, float* data);
-	void unbindVAO(void);
-
-	GLuint vaoID = createVAO();
-	bindIndicesBuffer(indices);
-	storeDataInAttributeList(0, 3, vArray);
-	storeDataInAttributeList(1, 2, tArray);
-	storeDataInAttributeList(2, 3, nArray);
-	unbindVAO();
-
-
-
-	return vaoID;
-}
-
-GLuint createVAO(void)
-{
-	GLuint vaoID = 0;
-	glGenVertexArrays(1, &vaoID);
-	glBindVertexArray(vaoID);
-	return vaoID;
-}
-
-void unbindVAO(void) {
-	glBindVertexArray(0);
-}
-
-void bindIndicesBuffer(int* indices)
-{
-	GLuint vboID = 0;
-	int tempSize = newTerrain->getIndexSize();
-	glGenBuffers(1, &vboID);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboID);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (tempSize * sizeof(int)), indices, GL_STATIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (tempSize * sizeof(int)), indices, GL_STATIC_DRAW);
-}
-
-void storeDataInAttributeList(GLuint attribNumber, GLuint coordinateSize, float* data)
-{
-	GLuint vboId = 0;
-	int tempSize = newTerrain->getFaceSize();
-	glGenBuffers(1, &vboId);
-	glBindBuffer(GL_ARRAY_BUFFER, vboId);
-	if (coordinateSize == 2) // for texture coords
-		glBufferData(GL_ARRAY_BUFFER, (tempSize * 2 * sizeof(GLfloat)), data, GL_STATIC_DRAW);
-	else // for vertiex and normals
-		glBufferData(GL_ARRAY_BUFFER, (tempSize * 3 * sizeof(GLfloat)), data, GL_STATIC_DRAW);
-	glVertexAttribPointer(attribNumber, coordinateSize, GL_FLOAT, GL_FALSE, 0, NULL);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-}
+//GLuint loadToVAO(GLfloat* vArray, GLfloat* nArray, GLfloat* tArray, int* indices)
+//{
+//	GLuint createVAO(void);
+//	void bindIndicesBuffer(int* indices);
+//	void storeDataInAttributeList(GLuint attribNumber, GLuint coordinateSize, float* data);
+//	void unbindVAO(void);
+//
+//	GLuint vaoID = createVAO();
+//	bindIndicesBuffer(indices);
+//	storeDataInAttributeList(0, 3, vArray);
+//	storeDataInAttributeList(1, 2, tArray);
+//	storeDataInAttributeList(2, 3, nArray);
+//	unbindVAO();
+//
+//
+//
+//	return vaoID;
+//}
+//
+//GLuint createVAO(void)
+//{
+//	GLuint vaoID = 0;
+//	glGenVertexArrays(1, &vaoID);
+//	glBindVertexArray(vaoID);
+//	return vaoID;
+//}
+//
+//void unbindVAO(void) {
+//	glBindVertexArray(0);
+//}
+//
+//void bindIndicesBuffer(int* indices)
+//{
+//	GLuint vboID = 0;
+//	int tempSize = newTerrain->getIndexSize();
+//	glGenBuffers(1, &vboID);
+//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboID);
+//	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (tempSize * sizeof(int)), indices, GL_STATIC_DRAW);
+//	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (tempSize * sizeof(int)), indices, GL_STATIC_DRAW);
+//}
+//
+//void storeDataInAttributeList(GLuint attribNumber, GLuint coordinateSize, float* data)
+//{
+//	GLuint vboId = 0;
+//	int tempSize = newTerrain->getFaceSize();
+//	glGenBuffers(1, &vboId);
+//	glBindBuffer(GL_ARRAY_BUFFER, vboId);
+//	if (coordinateSize == 2) // for texture coords
+//		glBufferData(GL_ARRAY_BUFFER, (tempSize * 2 * sizeof(GLfloat)), data, GL_STATIC_DRAW);
+//	else // for vertiex and normals
+//		glBufferData(GL_ARRAY_BUFFER, (tempSize * 3 * sizeof(GLfloat)), data, GL_STATIC_DRAW);
+//	glVertexAttribPointer(attribNumber, coordinateSize, GL_FLOAT, GL_FALSE, 0, NULL);
+//	glBindBuffer(GL_ARRAY_BUFFER, 0);
+//
+//}
 
 
 void prepareTerrain(void)
 {
-	glBindVertexArray(gVao_terrain);
+	glBindVertexArray(newTerrain->getModel()->getVaoID());
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	// load shine and reflectivity vars
 	glUniform1f(location_shineDamper, 1);
 	glUniform1f(location_reflectivity, 0);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture_terrain->getTextureId());
+	/*glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture_terrain->getTextureId());*/
+	texture_terrain->bindTexture(0);
 	glUniform1i(location_sampler, 0);
 
 }
@@ -1322,7 +1341,7 @@ void renderTerrain(void)
 	//start rendering
 	glUseProgram(gShaderProgramObjectTerrain);
 	//load light
-	glUniform3f(location_lightPosition, 10.0f, 10.0f, 10.0f);
+	glUniform3f(location_lightPosition, 0.0f, 0.0f, 0.0f);
 	glUniform3f(location_lightColour, 1.0f, 1.0f, 1.0f);
 	//load view matrix
 	glUniformMatrix4fv(location_viewMatrix, 1, GL_FALSE, camera->getLookAtMatrix());
@@ -1345,96 +1364,99 @@ void display(void)
 	//glClearColor(0.49f, 89.0f, 0.98f, 1);
 	glClearColor(0.0f, 0.0f, 0.0f, 1);
 
-	//// start using OpenGL program object
-	//glUseProgram(gShaderProgramObject);
+	// start using OpenGL program object
+	glUseProgram(gShaderProgramObject);
 
-	//if (gbLight == true)
-	//{
-	//	glUniform1i(gLKeyPressedUniform, 1);
+	if (gbLight == true)
+	{
+		glUniform1i(gLKeyPressedUniform, 1);
 
-	//	glUniform3f(gLdUniform, 1.0f, 1.0f, 1.0f);
-	//	glUniform3f(gKdUniform, 1.0f, 1.0f, 1.0f);//0.5f, 0.5f, 0.5f);
+		glUniform3f(gLdUniform, 1.0f, 1.0f, 1.0f);
+		glUniform3f(gKdUniform, 1.0f, 1.0f, 1.0f);//0.5f, 0.5f, 0.5f);
 
-	//	float lightPosition[] = { 0.0f, 0.0f, 2.0f, 1.0f };
-	//	glUniform4fv(gLightPositionUniform, 1, (GLfloat*)lightPosition);
-	//}
-	//else
-	//{
-	//	glUniform1i(gLKeyPressedUniform, 0);
-	//}
+		float lightPosition[] = { 0.0f, 0.0f, 2.0f, 1.0f };
+		glUniform4fv(gLightPositionUniform, 1, (GLfloat*)lightPosition);
+	}
+	else
+	{
+		glUniform1i(gLKeyPressedUniform, 0);
+	}
 
-	//// OpenGL Drawing
-	//// set all matrices to identity
-	//mat4 modelMatrix = mat4::identity();
-	//mat4 viewMatrix = mat4::identity();
-	//mat4 modelViewMatrix = mat4::identity();
-	//mat4 rotationMatrix = mat4::identity();
+	// OpenGL Drawing
+	// set all matrices to identity
+	mat4 modelMatrix = mat4::identity();
+	mat4 viewMatrix = mat4::identity();
+	mat4 modelViewMatrix = mat4::identity();
+	mat4 rotationMatrix = mat4::identity();
 
-	////modelMatrix = scale(10.0, 10.0, 10.0);
-	//// apply z axis translation to go deep into the screen by -5.0,
-	//// so that triangle with same fullscreen co-ordinates, but due to above translation will look small
-	//modelMatrix = translate(0.0f, 0.0f, 0.0f);
+	//modelMatrix = scale(10.0, 10.0, 10.0);
+	// apply z axis translation to go deep into the screen by -5.0,
+	// so that triangle with same fullscreen co-ordinates, but due to above translation will look small
+	modelMatrix = translate(0.0f, 0.0f, -5.0f);
 
-	////input from ImGui
- //  //gAngle = ImGuiWrapper->getInputCameraAngle();
-	//float radius = 5.0f; // 5.0 MonkeyHead // 50.0 singleAeroplane
-	//float y_coord = radius * cos(radians(gAngle));
-	//float z_coord = radius * sin(radians(gAngle));
+	//input from ImGui
+   //gAngle = ImGuiWrapper->getInputCameraAngle();
+	float radius = 5.0f; // 5.0 MonkeyHead // 50.0 singleAeroplane
+	float y_coord = radius * cos(radians(gAngle));
+	float z_coord = radius * sin(radians(gAngle));
 
-	////this is to calculate tangent OTG. since the camera rotation plane is Y-Z & as per our requirement we want to move around the object keeping Y- as up direction at start
-	////this up direction needs to be updated as we move ahead.
-	////Hence we calculate tangent vector to the circle by taking cross product of the camera vector(normalized) and positive X axis as right direction. 
-	//vec3 f = normalize(vec3(0.0, y_coord, z_coord));
-	//vec3 up_direction = cross(f, vec3(1.0, 0.0, 0.0));
+	//this is to calculate tangent OTG. since the camera rotation plane is Y-Z & as per our requirement we want to move around the object keeping Y- as up direction at start
+	//this up direction needs to be updated as we move ahead.
+	//Hence we calculate tangent vector to the circle by taking cross product of the camera vector(normalized) and positive X axis as right direction. 
+	vec3 f = normalize(vec3(0.0, y_coord, z_coord));
+	vec3 up_direction = cross(f, vec3(1.0, 0.0, 0.0));
 
-	//viewMatrix = camera->getLookAtMatrix();
-	////viewMatrix = lookat(cameraPos, cameraPos + cameraFront, cameraUp);
-	////viewMatrix = lookat(vec3(0.0, y_coord, z_coord), vec3(0.0, 0.0, 0.0), up_direction);
-	////viewMatrix = lookat(vec3(z_coord, y_coord, 0.0), vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
-	//// all axes rotation by gAngle angle
-	//rotationMatrix = rotate(0.0f, gAngle, 0.0f);
-
-
-
-	//// multiply rotation matrix and model matrix to get modelView matrix
-	////modelViewMatrix = modelMatrix * rotationMatrix; // ORDER IS IMPORTANT
-	//modelMatrix = modelMatrix * rotationMatrix;
-	//modelViewMatrix = viewMatrix * modelMatrix;
-	//ImGuiWrapper->setMatrix(modelViewMatrix);
-	//// pass modelview matrix to the vertex shader in 'u_model_view_matrix' shader variable
-	//// whose position value we already calculated in initialize() by using glGetUniformLocation()
-	//glUniformMatrix4fv(gModelViewMatrixUniform, 1, GL_FALSE, modelViewMatrix);
-
-	//// pass projection matrix to the vertex shader in 'u_projection_matrix' shader variable
-	//// whose position value we already calculated in initialize() by using glGetUniformLocation()
-	//gPerspectiveProjectionMatrix = perspective(fov, (GLfloat)currentWidth / (GLfloat)currentHeight, 0.1f, 1000.0f);
-	//glUniformMatrix4fv(gProjectionMatrixUniform, 1, GL_FALSE, gPerspectiveProjectionMatrix);
-	////glUniformMatrix4fv(gProjectionMatrixUniform, 1, GL_FALSE, gOrthographicProjectionMatrix);
-
-	//glActiveTexture(GL_TEXTURE);
-	//glBindTexture(GL_TEXTURE_2D, texture_MonkeyHead->getTextureId());
-	//glUniform1i(gTextureSamplerUniform, 0);
+	viewMatrix = camera->getLookAtMatrix();
+	//viewMatrix = lookat(cameraPos, cameraPos + cameraFront, cameraUp);
+	//viewMatrix = lookat(vec3(0.0, y_coord, z_coord), vec3(0.0, 0.0, 0.0), up_direction);
+	//viewMatrix = lookat(vec3(z_coord, y_coord, 0.0), vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
+	// all axes rotation by gAngle angle
+	rotationMatrix = rotate(0.0f, gAngle, 0.0f);
 
 
-	//// *** bind vao ***
-	//glBindVertexArray(gVao_cube);
 
-	//// *** draw, either by glDrawTriangles() or glDrawArrays() or glDrawElements()
+	// multiply rotation matrix and model matrix to get modelView matrix
+	//modelViewMatrix = modelMatrix * rotationMatrix; // ORDER IS IMPORTANT
+	modelMatrix = modelMatrix * rotationMatrix;
+	modelViewMatrix = viewMatrix * modelMatrix;
+	ImGuiWrapper->setMatrix(modelViewMatrix);
+	// pass modelview matrix to the vertex shader in 'u_model_view_matrix' shader variable
+	// whose position value we already calculated in initialize() by using glGetUniformLocation()
+	glUniformMatrix4fv(gModelViewMatrixUniform, 1, GL_FALSE, modelViewMatrix);
 
-	////glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	////glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
-	////glDrawArrays(GL_TRIANGLE_FAN, 8, 4);
-	////glDrawArrays(GL_TRIANGLE_FAN, 12, 4);
-	////glDrawArrays(GL_TRIANGLE_FAN, 16, 4);
-	////glDrawArrays(GL_TRIANGLE_FAN, 20, 4);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	//glDrawArrays(GL_TRIANGLES, 0, (fSize * 3 * 3)); // 9  for triangle 1*3*3 // 108 for cube 12*3*3 // 968*3*3 = 8712 for monkey head
+	// pass projection matrix to the vertex shader in 'u_projection_matrix' shader variable
+	// whose position value we already calculated in initialize() by using glGetUniformLocation()
+	gPerspectiveProjectionMatrix = perspective(fov, (GLfloat)currentWidth / (GLfloat)currentHeight, 0.1f, 1000.0f);
+	glUniformMatrix4fv(gProjectionMatrixUniform, 1, GL_FALSE, gPerspectiveProjectionMatrix);
+	//glUniformMatrix4fv(gProjectionMatrixUniform, 1, GL_FALSE, gOrthographicProjectionMatrix);
 
-	//// *** unbind vao ***
-	//glBindVertexArray(0);
+	texture_MonkeyHead->bindTexture(0);
+	/*glActiveTexture(GL_TEXTURE);
+	glBindTexture(GL_TEXTURE_2D, texture_MonkeyHead->getTextureId());*/
+	glUniform1i(gTextureSamplerUniform, 0);
 
-	// //stop using OpenGL program object
-	//glUseProgram(0);
+
+	// *** bind vao ***
+	glBindVertexArray(monkeyVao);// gVao_cube);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	// *** draw, either by glDrawTriangles() or glDrawArrays() or glDrawElements()
+
+	//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	//glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
+	//glDrawArrays(GL_TRIANGLE_FAN, 8, 4);
+	//glDrawArrays(GL_TRIANGLE_FAN, 12, 4);
+	//glDrawArrays(GL_TRIANGLE_FAN, 16, 4);
+	//glDrawArrays(GL_TRIANGLE_FAN, 20, 4);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glDrawArrays(GL_TRIANGLES, 0, (968 * 3 * 3)); // 9  for triangle 1*3*3 // 108 for cube 12*3*3 // 968*3*3 = 8712 for monkey head
+
+	// *** unbind vao ***
+	glBindVertexArray(0);
+
+	 //stop using OpenGL program object
+	glUseProgram(0);
 
 	renderTerrain();
 	//gAngle++;

@@ -1,8 +1,15 @@
 #pragma once
-
-#include <windows.h>
-#include "gl\glew.h"
-#include "gl/GL.h"
+#include<Windows.h>
+// c
+#include <stdio.h> // for FILE I/O
+#include <stdlib.h>
+// OGL
+#include <gl\glew.h> // for GLSL extensions IMPORTANT : This Line Should Be Before #include<gl\gl.h> And #include<gl\glu.h>
+#include <gl/GL.h>
+// c++
+#include<vector>
+#include<fstream>
+#include<string>
 
 #define IDBITMAP_KUNDALI 100
 #define IDBITMAP_STONE   101
@@ -12,13 +19,14 @@
 class Texture
 {
 public:
-	Texture(GLuint id, char* RcId);
+	Texture(char* RcId);
 	~Texture();
 	GLuint getTextureId(void);
-	int LoadGLTextures(void); 	// (GLuint* texture, TCHAR imageResourceId[]);
+	GLuint LoadGLTextures(void); 	// (GLuint* texture, TCHAR imageResourceId[]);
+	void cleanUp(void);
+	void bindTexture(int index);
 
 private:
-	GLuint textureId;
 	char* imageResourceId;
-	
+	std::vector<GLuint> textures;
 };  

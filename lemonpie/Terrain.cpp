@@ -1,6 +1,6 @@
 #include "Terrain.h"
 
-void Terrain::generateTerrain(void)
+RawModel* Terrain::generateTerrain(Loader& loader)
 {
 	int count = VERTEX_COUNT * VERTEX_COUNT;
 	vertices = (float*)malloc(count * 3 * 4);
@@ -16,7 +16,7 @@ void Terrain::generateTerrain(void)
 			vertices[vertexPointer * 3] = (float)j / ((float)VERTEX_COUNT - 1) * SIZE;
 			vertices[vertexPointer * 3 + 1] = 0;
 			vertices[vertexPointer * 3 + 2] = (float)i / ((float)VERTEX_COUNT - 1) * SIZE;
-			normals[vertexPointer * 3] = 0;
+			normals[vertexPointer * 3] = 0;  
 			normals[vertexPointer * 3 + 1] = 1;
 			normals[vertexPointer * 3 + 2] = 0;
 			textureCoords[vertexPointer * 2] = (float)j / ((float)VERTEX_COUNT - 1);
@@ -44,9 +44,11 @@ void Terrain::generateTerrain(void)
 	}
 
 	iSize = pointer;
+
+	return (loader.loadToVAO(vertices, textureCoords, normals, indices, fSize));
 }
 
-Terrain::Terrain(int gridX, int gridZ)
+Terrain::Terrain(int gridX, int gridZ, Loader& loader)
 {
 	x = gridX * SIZE;
 	z = gridZ * SIZE;
@@ -56,7 +58,7 @@ Terrain::Terrain(int gridX, int gridZ)
 	indices = NULL;
 	fSize = 0;
 	iSize = 0;
-	generateTerrain();
+	model = generateTerrain(loader);
 }
 
 Terrain::~Terrain()
@@ -67,6 +69,11 @@ Terrain::~Terrain()
 	normals = NULL;
 	free(textureCoords);
 	textureCoords = NULL;
+}
+
+RawModel* Terrain::getModel(void)
+{
+	return model;
 }
 
 float* Terrain::getVertices(void)
