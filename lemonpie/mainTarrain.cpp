@@ -125,6 +125,9 @@ GLuint gTexture_terrain;
 
 Texture* texture_terrain;
 
+
+
+
 Loader terrainLoader;
 RawModel* terrainModel;
 //*****************
@@ -461,6 +464,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	void display(void);
 	void spin(void);
 	void updatefov(float yOffset);
+	bool testReadFile(const char* pFileName, std::string & outFile);
 
 	//variable declaration
 	WNDCLASSEX wndclass;
@@ -469,8 +473,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	TCHAR szClassName[] = TEXT("OpenGLPP");
 	bool bDone = false;
 
-	
-	//GetModuleFileName(NULL, filePath, BUFFER_SIZE); // to read fully qualified path of .exe. Not used.
 
 	//code
 	// create log file
@@ -553,7 +555,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	camera = new CameraControl(0.0f, 0.1f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
-
+	//bool fileReadSuccessFlag;
+	//std::string outShaderVS;
+	//fileReadSuccessFlag = testReadFile("Shaders/simple.vs", outShaderVS);
+	////GetModuleFileName(NULL, filePath, BUFFER_SIZE); // to read fully qualified path of .exe. Not used.
+	//exit(0);
 	//Message Loop
 	while (bDone == false) //Parallel to glutMainLoop();
 	{
@@ -1619,4 +1625,54 @@ void cleanUp(void)
 
 	delete newTerrain;
 	newTerrain = NULL;
+
+	if (gTexture_terrain)
+	{
+		glDeleteTextures(1, &gTexture_terrain);
+		gTexture_terrain = NULL;
+	}
+	
+	if (texture_terrain)
+	{
+		free(texture_terrain);
+		texture_terrain = NULL;
+	}
+	//if (terrainLoader)
+	//{
+	//	free(texture_terrain);
+	//	texture_terrain = NULL;
+	//}
+
+	if (terrainModel)
+	{
+		free(terrainModel);
+		terrainModel = NULL;
+	}
+	
 }
+
+//bool testReadFile(const char* pFileName, std::string& outFile)
+//{
+//	std::ifstream  f(pFileName);
+//
+//	bool ret = false;
+//
+//	if (f.is_open())
+//	{
+//		std::string line;
+//		while (getline(f, line))
+//		{
+//			outFile.append(line);
+//			outFile.append("\n");
+//		}
+//
+//		f.close();
+//		ret = true;
+//	}
+//	else
+//	{
+//		// report error in logfile. take logfile pointer as an input;
+//	}
+//
+//	return ret;
+//}
