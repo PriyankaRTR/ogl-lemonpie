@@ -3,7 +3,7 @@
 
 RawModel* Loader::loadToVAO(GLfloat* vArray, GLfloat* nArray, GLfloat* tArray, int* indices, int fSize)
 {
-	GLuint vaoID = createVAO();
+	GLuint vaoID = createVAO(); 
 	bindIndicesBuffer(indices, fSize);
 	storeDataInAttributeList(VDG_ATTRIBUTE_VERTEX, 3, vArray, fSize);
 	storeDataInAttributeList(VDG_ATTRIBUTE_TEXTURE0, 2, tArray, fSize);
@@ -55,10 +55,18 @@ void Loader::storeDataInAttributeList(GLuint attribNumber, GLuint coordinateSize
 	glGenBuffers(1, &vboId);
 	vbos.push_back(vboId);
 	glBindBuffer(GL_ARRAY_BUFFER, vboId);
-	if (coordinateSize == 2) // for texture coords
-		glBufferData(GL_ARRAY_BUFFER, (arraySize * 2 * sizeof(GLfloat)), data, GL_STATIC_DRAW);
-	else // for vertiex and normals
-		glBufferData(GL_ARRAY_BUFFER, (arraySize * 3 * sizeof(GLfloat)), data, GL_STATIC_DRAW);
+
+		if (coordinateSize == 2) // for texture coords
+			glBufferData(GL_ARRAY_BUFFER, (arraySize * 2 * sizeof(GLfloat)), data, GL_STATIC_DRAW);
+		else // for vertiex and normals
+			try
+			{
+				glBufferData(GL_ARRAY_BUFFER, (arraySize * 3 * sizeof(GLfloat)), data, GL_STATIC_DRAW);
+			}
+			catch(const std::exception& e)
+			{
+				int i=8;
+			}
 	glVertexAttribPointer(attribNumber, coordinateSize, GL_FLOAT, GL_FALSE, 0, NULL);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 

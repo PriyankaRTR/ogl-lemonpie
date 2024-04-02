@@ -7,13 +7,14 @@
 
 #include "Light.h"
 #include "CameraControl.h"
+#include "Shader.h"
 
-class TerrainShader
+class TerrainShader : public Shader
 {
+
 private:
-	TerrainShader();
-	void bindAttributes(void);
-	void getAllUniformLocations(GLuint shaderObject);
+	const char* VERTEX_FILE = "Shaders/simple.vs";
+	const char* FRAGMENT_FILE = "Shaders/simple.fs";
 	GLuint location_transformationMatrix;
 	GLuint location_projectionMatrix;
 	GLuint location_viewMatrix;
@@ -24,15 +25,22 @@ private:
 	GLuint location_sampler;
 
 public:
+	TerrainShader(const char* VERTEX_FILE, const char* FRAGMENT_FILE);
+	~TerrainShader();
 	void loadShineVariables(float damper, float reflectivity);
 
 	void loadTransformationMatrix(vmath::mat4& matrix);
 
 	void loadLight(Light light);
 
-	void loadViewMatrix(CameraControl camera);
+	void loadViewMatrix(CameraControl* camera);
 
 	void loadProjectionMatrix(mat4 projection);
+
+	void loadSampler(GLuint sampler);
+
+	void bindAttributes(void) override;
+	void getAllUniformLocations(void) override;
 
 
 };

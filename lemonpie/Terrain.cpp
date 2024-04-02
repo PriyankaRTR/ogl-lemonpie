@@ -59,6 +59,7 @@ Terrain::Terrain(int gridX, int gridZ, Loader& loader)
 	fSize = 0;
 	iSize = 0;
 	model = generateTerrain(loader);
+	
 }
 
 Terrain::~Terrain()

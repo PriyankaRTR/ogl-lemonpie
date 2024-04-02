@@ -31,7 +31,10 @@
 #include "ImGui_Wrapper.h" //Priyanka
 #endif
 #include "Terrain.h"
+#include "TerrainRenderer.h"
 //#include "Terrain.h"
+#include "Shader.h"
+#include "TerrainShader.h"
 
 #define ENABLE_CAMERA_YAW_ROTATION 1
 #define ENABLE_CAMERA_PITCH_ROTATION 1
@@ -130,6 +133,10 @@ Texture* texture_terrain;
 
 Loader terrainLoader;
 RawModel* terrainModel;
+//entities
+Terrain* newTerrain;
+TerrainShader* terrainShader;
+TerrainRenderer* terrainRenderer;
 //*****************
 
 
@@ -185,8 +192,11 @@ float yMouseOffset;
 ImVec2 mouseOffset = { 0.0,0.0 }; // ImGui datatype
 #endif
 
-//entities
-Terrain* newTerrain;
+
+
+// test
+
+//TerrainShader *terrainShader;
 
 void objDataLoader(void)
 {
@@ -555,9 +565,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	camera = new CameraControl(0.0f, 0.1f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
-	//bool fileReadSuccessFlag;
-	//std::string outShaderVS;
-	//fileReadSuccessFlag = testReadFile("Shaders/simple.vs", outShaderVS);
+	//////bool fileReadSuccessFlag;
+	//////std::string outShaderVS;
+	//////fileReadSuccessFlag = testReadFile("Shaders/simple.vs", outShaderVS);
+	//////GetModuleFileName(NULL, filePath, BUFFER_SIZE); // to read fully qualified path of .exe. Not used.
+	//////Shader *testShader = new Shader("Shaders/simple.vs", "Shaders/simple.fs", gpFile);
+	//////testShader->cleanUp();
+	//////delete(testShader);
 	////GetModuleFileName(NULL, filePath, BUFFER_SIZE); // to read fully qualified path of .exe. Not used.
 	//exit(0);
 	//Message Loop
@@ -845,6 +859,7 @@ void initialize(void)
 		ghdc = NULL;
 	}
 
+
 	// *** TERRAIN SHADER AND UNIFORM LOCATIONS ***
 	// *** VERTEX SHALDER ***
 	const GLchar* vertexShaderTerrain = 
@@ -1072,61 +1087,18 @@ void initialize(void)
 	gLightPositionUniform = glGetUniformLocation(gShaderProgramObject, "u_light_position");
 
 	gTextureSamplerUniform = glGetUniformLocation(gShaderProgramObject, "u_texture0_sampler");
-
-	// *** vertices, colors, shader attribs, vbo, vao initializations ***
-
-	//processVertexData();
-	//processNormalsData();
-	//processTextureData();
-
-	//processObjData();
-
-	// CUBE CODE
-	//// vao
-	//glGenVertexArrays(1, &gVao_cube);
-	//glBindVertexArray(gVao_cube);
-
-	//// position vbo
-	//glGenBuffers(1, &gVbo_cube_position);
-	//glBindBuffer(GL_ARRAY_BUFFER, gVbo_cube_position);
-	//glBufferData(GL_ARRAY_BUFFER, (fSize * 3 * 3 * 4), vertexArray, GL_STATIC_DRAW); //432 for cube = 12*3*3*4  // 36 for triangle // monkey head 968*3*3*4 = 34848
-
-
-
-	//glVertexAttribPointer(VDG_ATTRIBUTE_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
-	//glEnableVertexAttribArray(VDG_ATTRIBUTE_VERTEX);
-
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	//// normal vbo
-	//glGenBuffers(1, &gVbo_cube_normal);
-	//glBindBuffer(GL_ARRAY_BUFFER, gVbo_cube_normal);
-	//glBufferData(GL_ARRAY_BUFFER, (fSize * 3 * 3 * 4), normalsArray, GL_STATIC_DRAW);
-
-	//glVertexAttribPointer(VDG_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
-	//glEnableVertexAttribArray(VDG_ATTRIBUTE_NORMAL);
-
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-
-	//// texture vbo
-	//glGenBuffers(1, &gVbo_cube_texture);
-	//glBindBuffer(GL_ARRAY_BUFFER, gVbo_cube_texture);
-	//glBufferData(GL_ARRAY_BUFFER, (fSize * 3 * 2 * 4), textureArray, GL_STATIC_DRAW);
-
-	//glVertexAttribPointer(VDG_ATTRIBUTE_TEXTURE0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-
-	//glEnableVertexAttribArray(VDG_ATTRIBUTE_TEXTURE0);
-
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+	
+	
 	//glBindVertexArray(0);
 	//loader = new Loader();
 	newTerrain = new Terrain(0, 0, terrainLoader);
+	terrainShader = new TerrainShader("Shaders/terrain.vs", "Shaders/terrain.fs");
+	terrainRenderer = new TerrainRenderer(terrainShader, gPerspectiveProjectionMatrix);
+	
 	//terrainModel = terrainLoader.loadToVAO(newTerrain->getVertices(), newTerrain->getNormals(), newTerrain->getTextureCoords(), newTerrain->getIndices(), newTerrain->getFaceSize());
-	 
+	//terrainShader = new TerrainShader();
+	//terrainRenderer = new TerrainRenderer(terrainShader,gPerspectiveProjectionMatrix);
+	
 	//cleanUp(); // free heap memory after pushing data to the GPU
 
 	glShadeModel(GL_SMOOTH);
@@ -1164,7 +1136,7 @@ void initialize(void)
 
 
 
-void createShaderProgram(const GLchar* vShader, const GLchar* fShader)
+void createShaderProgram(const GLchar* vShader, const GLchar* fShader) // in Taken care in Shader and TerrainShader
 {
 	void bindAttributes(GLuint attribute, const char* varName);
 	void getAllUniformLocations(void);
@@ -1241,63 +1213,6 @@ GLuint loadShader(const GLchar* shaderSource, GLenum type)
 }
 
 
-//GLuint loadToVAO(GLfloat* vArray, GLfloat* nArray, GLfloat* tArray, int* indices)
-//{
-//	GLuint createVAO(void);
-//	void bindIndicesBuffer(int* indices);
-//	void storeDataInAttributeList(GLuint attribNumber, GLuint coordinateSize, float* data);
-//	void unbindVAO(void);
-//
-//	GLuint vaoID = createVAO();
-//	bindIndicesBuffer(indices);
-//	storeDataInAttributeList(0, 3, vArray);
-//	storeDataInAttributeList(1, 2, tArray);
-//	storeDataInAttributeList(2, 3, nArray);
-//	unbindVAO();
-//
-//
-//
-//	return vaoID;
-//}
-//
-//GLuint createVAO(void)
-//{
-//	GLuint vaoID = 0;
-//	glGenVertexArrays(1, &vaoID);
-//	glBindVertexArray(vaoID);
-//	return vaoID;
-//}
-//
-//void unbindVAO(void) {
-//	glBindVertexArray(0);
-//}
-//
-//void bindIndicesBuffer(int* indices)
-//{
-//	GLuint vboID = 0;
-//	int tempSize = newTerrain->getIndexSize();
-//	glGenBuffers(1, &vboID);
-//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboID);
-//	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (tempSize * sizeof(int)), indices, GL_STATIC_DRAW);
-//	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (tempSize * sizeof(int)), indices, GL_STATIC_DRAW);
-//}
-//
-//void storeDataInAttributeList(GLuint attribNumber, GLuint coordinateSize, float* data)
-//{
-//	GLuint vboId = 0;
-//	int tempSize = newTerrain->getFaceSize();
-//	glGenBuffers(1, &vboId);
-//	glBindBuffer(GL_ARRAY_BUFFER, vboId);
-//	if (coordinateSize == 2) // for texture coords
-//		glBufferData(GL_ARRAY_BUFFER, (tempSize * 2 * sizeof(GLfloat)), data, GL_STATIC_DRAW);
-//	else // for vertiex and normals
-//		glBufferData(GL_ARRAY_BUFFER, (tempSize * 3 * sizeof(GLfloat)), data, GL_STATIC_DRAW);
-//	glVertexAttribPointer(attribNumber, coordinateSize, GL_FLOAT, GL_FALSE, 0, NULL);
-//	glBindBuffer(GL_ARRAY_BUFFER, 0);
-//
-//}
-
-
 void prepareTerrain(void)
 {
 	glBindVertexArray(newTerrain->getModel()->getVaoID());
@@ -1355,10 +1270,25 @@ void renderTerrain(void)
 	glUniformMatrix4fv(location_projectionMatrix, 1, GL_FALSE, projMatrixTerrain);
 	prepareTerrain();
 	loadTransformationMatrix();
-	loadViewMatrix();
+	//loadViewMatrix();
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	unbindTextureModel();
 	glUseProgram(0);
+}
+
+void renderTerrainTest(void)
+{
+	mat4 projMatrixTerrain = mat4::identity();
+	Light lightForTarrian(vec3(0.0,0.0,0.0), vec3(1.0,1.0,1.0));
+	terrainShader->start();
+	terrainShader->loadLight(lightForTarrian);
+	projMatrixTerrain = perspective(fov, (GLfloat)currentWidth / (GLfloat)currentHeight, 0.1f, 1000.0f);
+	terrainShader->loadProjectionMatrix(projMatrixTerrain);
+	terrainShader->loadViewMatrix(camera);
+	//texture_terrain->bindTexture(0);
+	//glUniform1i(location_sampler, 0);
+	terrainRenderer->render(newTerrain, texture_terrain);
+	terrainShader->stop();
 }
 
 void display(void)
@@ -1464,7 +1394,7 @@ void display(void)
 	 //stop using OpenGL program object
 	glUseProgram(0);
 
-	renderTerrain();
+	renderTerrainTest();
 	//gAngle++;
 
 }
@@ -1623,8 +1553,25 @@ void cleanUp(void)
 		textureArray = NULL;
 	}
 
-	delete newTerrain;
-	newTerrain = NULL;
+	if (newTerrain)
+	{
+		delete newTerrain;
+		newTerrain = NULL;
+
+	}
+
+	if (terrainShader)
+	{
+		delete(terrainShader);
+		terrainShader = NULL;
+	}
+
+
+	if (terrainRenderer)
+	{
+		delete(terrainRenderer);
+		terrainRenderer = NULL;
+	}
 
 	if (gTexture_terrain)
 	{
@@ -1637,11 +1584,12 @@ void cleanUp(void)
 		free(texture_terrain);
 		texture_terrain = NULL;
 	}
-	//if (terrainLoader)
-	//{
-	//	free(texture_terrain);
-	//	texture_terrain = NULL;
-	//}
+	if (&terrainLoader)
+	{
+		terrainLoader.cleanUp();
+		//free(&terrainLoader);
+		//terrainLoader = NULL;
+	}
 
 	if (terrainModel)
 	{
@@ -1651,28 +1599,28 @@ void cleanUp(void)
 	
 }
 
-//bool testReadFile(const char* pFileName, std::string& outFile)
-//{
-//	std::ifstream  f(pFileName);
-//
-//	bool ret = false;
-//
-//	if (f.is_open())
-//	{
-//		std::string line;
-//		while (getline(f, line))
-//		{
-//			outFile.append(line);
-//			outFile.append("\n");
-//		}
-//
-//		f.close();
-//		ret = true;
-//	}
-//	else
-//	{
-//		// report error in logfile. take logfile pointer as an input;
-//	}
-//
-//	return ret;
-//}
+bool testReadFile(const char* pFileName, std::string& outFile)
+{
+	std::ifstream  f(pFileName);
+
+	bool ret = false;
+
+	if (f.is_open())
+	{
+		std::string line;
+		while (getline(f, line))
+		{
+			outFile.append(line);
+			outFile.append("\n");
+		}
+
+		f.close();
+		ret = true;
+	}
+	else
+	{
+		// report error in logfile. take logfile pointer as an input;
+	}
+
+	return ret;
+}

@@ -3,19 +3,21 @@
 #include "RawModel.h"
 #include "TerrainShader.h"
 #include "Texture.h"
+#include "vmath.h"
 
 class TerrainRenderer
 {
 
 private:
-	TerrainShader shader;
-	void prepareTerrain(Terrain terrain);
+	TerrainShader* shader;
+	void prepareTerrain(Terrain* terrain);
 	void loadTransformationMatrix(void);
+	void loadModelMatrix(Terrain* terrain);
 	void unbindTextureModel(void);
 	void loadViewMatrix(void);
 
 public:
-	TerrainRenderer(TerrainShader shader, mat4 projectionMatrix);
-	void render(void);
+	TerrainRenderer(TerrainShader* shader, mat4 projectionMatrix);
+	void render(Terrain* terrain, Texture* texture);
 };
 

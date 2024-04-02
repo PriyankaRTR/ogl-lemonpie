@@ -28,12 +28,15 @@
     <ClCompile Include="ImGui\imgui\imgui_tables.cpp" />
     <ClCompile Include="ImGui\imgui\imgui_widgets.cpp" />
     <ClCompile Include="ImGui_Wrapper.cpp" />
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="Loader.cpp" />
     <ClCompile Include="mainTarrain.cpp" />
     <ClCompile Include="OBJLoader.cpp" />
     <ClCompile Include="RawModel.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Terrain.cpp" />
+    <ClCompile Include="TerrainRenderer.cpp" />
+    <ClCompile Include="TerrainShader.cpp" />
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -48,11 +51,14 @@
     <ClInclude Include="ImGui\imgui\imstb_textedit.h" />
     <ClInclude Include="ImGui\imgui\imstb_truetype.h" />
     <ClInclude Include="ImGui_Wrapper.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="Loader.h" />
     <ClInclude Include="OBJLoader.h" />
     <ClInclude Include="RawModel.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Terrain.h" />
+    <ClInclude Include="TerrainRenderer.h" />
+    <ClInclude Include="TerrainShader.h" />
     <ClInclude Include="Texture.h" />
   </ItemGroup>
   <ItemGroup>

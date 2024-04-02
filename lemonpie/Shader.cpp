@@ -1,14 +1,12 @@
 #include "Shader.h"
 
 
-GLuint Shader::loadShader(char* file, GLuint type)
+GLuint Shader::loadShader(const char* file, GLuint type)
 {
 	std::string s;
 	GLchar* shaderCode;
-	GLuint shaderObjId;
+	GLuint shaderObjId = 0;
 	
-	shaderObjId = glCreateShader(type);
-
 	////assign shader object ids
 	//if (type == GL_VERTEX_SHADER)
 	//	vertexShaderID = shaderObjId;
@@ -18,7 +16,8 @@ GLuint Shader::loadShader(char* file, GLuint type)
 	if (readFile(file, s))
 	{
 		shaderCode = (GLchar*)s.c_str();
-		glShaderSource(shaderObjId, 1, (GLchar**)shaderCode, NULL);
+		shaderObjId = glCreateShader(type);
+		glShaderSource(shaderObjId, 1, (GLchar**)&shaderCode, NULL);
 		glCompileShader(shaderObjId);
 		GLint iInfoLogLength = 0;
 		GLint iShaderCompiledStatus = 0;
@@ -34,7 +33,7 @@ GLuint Shader::loadShader(char* file, GLuint type)
 				{
 					GLsizei written;
 					glGetShaderInfoLog(shaderObjId, iInfoLogLength, &written, szInfoLog);
-					//fprintf(gpFile, "Vertex Shader Compilation Log : %s\n", szInfoLog); either keep a common file pointer and write into a same log file or use seperate file
+					//fprintf(fpLog, "%s Shader Compilation Log : %s\n", file, szInfoLog); //either keep a common file pointer and write into a same log file or use seperate file
 					free(szInfoLog);
 					glDeleteShader(shaderObjId);
 					exit(0);
@@ -43,10 +42,7 @@ GLuint Shader::loadShader(char* file, GLuint type)
 		}
 
 	}
-	else
-	{
-		glDeleteShader(shaderObjId);
-	}
+
 
 	return shaderObjId;
 	
@@ -55,7 +51,7 @@ GLuint Shader::loadShader(char* file, GLuint type)
 bool Shader::readFile(const char* pFileName, std::string& outFile)
 {
 
-	std::ifstream f{};
+	std::ifstream f(pFileName);
 
 	bool ret = false;
 
@@ -81,13 +77,17 @@ bool Shader::readFile(const char* pFileName, std::string& outFile)
 }
 
 
+Shader::Shader()
+{
+	// do nothing
+}
 
-
-Shader::Shader(char* fileVertexShader, char* fileFragmentShader)
+Shader::Shader(const char* fileVertexShader,const char* fileFragmentShader)//, FILE* fp)
 {
 	programID = 0;
 	vertexShaderID = 0;
 	fragmentShaderID = 0;
+	//fpLog = fp;
 
 	vertexShaderID = loadShader(fileVertexShader, GL_VERTEX_SHADER);
 	fragmentShaderID = loadShader(fileFragmentShader, GL_FRAGMENT_SHADER);
@@ -96,9 +96,10 @@ Shader::Shader(char* fileVertexShader, char* fileFragmentShader)
 
 	glAttachShader(programID, vertexShaderID);
 	glAttachShader(programID, fragmentShaderID);
-
+	//bindAttributes();
 	glLinkProgram(programID);
-
+	glValidateProgram(programID);
+	//getAllUniformLocations();
 }
 
 void Shader::start(void)
@@ -128,9 +129,9 @@ void Shader::cleanUp(void)
 
 }
 
-int Shader::getUniformLocation(char* uniformName)
+GLuint Shader::getUniformLocation(const char* uniformName)
 {
-	return 0;
+	return glGetUniformLocation(programID, uniformName);
 }
 
 void Shader::loadMatrix(GLuint location, vmath::mat4 matrix)
@@ -158,7 +159,12 @@ void Shader::loadBoolean(GLuint location, GLboolean value)
 	glUniform1f(location, boolVal);
 }
 
-void Shader::bindAttribute(GLuint attribute, char* variableName)
+void Shader::loadUint(GLuint location, GLuint value)
+{
+	glUniform1i(location, value);
+}
+
+void Shader::bindAttribute(GLuint attribute, const char* variableName)
 {
 	glBindAttribLocation(programID, attribute, variableName);
 }
