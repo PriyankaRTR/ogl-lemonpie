@@ -23,21 +23,14 @@ class OBJLoader
 {
 private:
 
-	char line[BUFFER_SIZE];
-	//for obj loading
-	std::vector<std::vector<float>> g_vertices;
-	std::vector<std::vector<float>> g_texture;
-	std::vector<std::vector<float>> g_normals;
-	std::vector<std::vector<int>> objIndices;
-	std::vector<std::vector<int>> g_face_tri, g_face_texture, g_face_normal;
-	unsigned long long int fSize;
-	GLfloat* vertexArray;
-	GLfloat* normalsArray;
-	GLfloat* textureArray;
-	GLfloat* indicess;
-	void processVertexData(void);
-	void processNormalsData(void);
-	void processTextureData(void);
+
+	//static void processVertexData(void);
+	//static void processNormalsData(void);
+	static void processTextureData(void);
+	static float* processVertexData(std::vector<std::vector<float>>& g_vertices, std::vector<std::vector<int>>& g_face_tri);
+	static float* processNormalsData(std::vector<std::vector<float>>& g_normals, std::vector<std::vector<int>>& g_face_normal);
+	static float* processTextureData(std::vector<std::vector<float>>& g_texture, std::vector<std::vector<int>>& g_face_texture);
+
 	//float* vertices;
 	//float* normals;
 	//float* textureCoords;
@@ -45,11 +38,6 @@ private:
 
 
 public:
-	GLuint loadObjModel(const char* fileName, Loader& loader);
-	//float* getVertices(void);
-	//float* getNormals(void);
-	//float* getTextureCoords(void);
-	//int getFaceSize(void);
-
+	static RawModel* loadObjModel(const char* fileName, Loader& loader);
 };
 

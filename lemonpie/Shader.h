@@ -21,7 +21,6 @@ private:
 	bool readFile(const char* pFileName, std::string& outFile);
 	
 public:
-	Shader();
 	Shader(const char* fileVertexShader, const char* fileFragmentShader);// , FILE* fp);
 	void start(void);
 	void stop(void);

@@ -72,6 +72,18 @@
     <ClCompile Include="TerrainRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EntityRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TexturedModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\backends\imgui_impl_opengl3.h">
@@ -132,6 +144,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TerrainRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TexturedModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

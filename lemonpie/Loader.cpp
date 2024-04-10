@@ -13,16 +13,15 @@ RawModel* Loader::loadToVAO(GLfloat* vArray, GLfloat* nArray, GLfloat* tArray, i
 	//return vaoID;
 }
 
-GLuint Loader::loadToVAO(GLfloat* vArray, GLfloat* nArray, GLfloat* tArray, int fSize)
+RawModel* Loader::loadToVAO(GLfloat* vArray, GLfloat* nArray, GLfloat* tArray, int fSize)
 {
 	GLuint vaoID = createVAO();
 	storeDataInAttributeList(VDG_ATTRIBUTE_VERTEX, 3, vArray, fSize);
 	storeDataInAttributeList(VDG_ATTRIBUTE_TEXTURE0, 2, tArray, fSize);
 	storeDataInAttributeList(VDG_ATTRIBUTE_NORMAL, 3, nArray, fSize);
 	unbindVAO();
-	return vaoID;
+	return (new RawModel(vaoID, fSize));
 }
-
 
 
 GLuint Loader::createVAO(void)

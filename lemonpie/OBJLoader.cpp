@@ -1,7 +1,8 @@
 #include "OBJLoader.h"
 
-void OBJLoader::processVertexData(void)
+float* OBJLoader::processVertexData(std::vector<std::vector<float>>& g_vertices, std::vector<std::vector<int>>& g_face_tri)
 {
+	GLfloat* vertexArray = NULL;
 	unsigned long int size, mallocSize;
 	size = g_face_tri.size();
 	mallocSize = sizeof(GLfloat) * size * 3 * 3;
@@ -30,10 +31,12 @@ void OBJLoader::processVertexData(void)
 			}
 		}
 	}
+	return vertexArray;
 }
 
-void OBJLoader::processNormalsData(void)
+float* OBJLoader::processNormalsData(std::vector<std::vector<float>>& g_normals, std::vector<std::vector<int>>& g_face_normal)
 {
+	GLfloat* normalsArray = NULL;
 	unsigned long int size, mallocSize;
 	size = g_face_normal.size();
 	mallocSize = sizeof(GLfloat) * size * 3 * 3;
@@ -63,10 +66,13 @@ void OBJLoader::processNormalsData(void)
 		}
 
 	}
+
+	return normalsArray;
 }
 
-void OBJLoader::processTextureData(void)
+float* OBJLoader::processTextureData(std::vector<std::vector<float>>& g_texture, std::vector<std::vector<int>>& g_face_texture)
 {
+	GLfloat* textureArray = NULL;
 	unsigned long int size, mallocSize;
 	size = g_face_texture.size();
 	mallocSize = sizeof(GLfloat) * size * 3 * 2;
@@ -95,10 +101,26 @@ void OBJLoader::processTextureData(void)
 		}
 
 	}
+
+	return textureArray;
 }
 
-GLuint OBJLoader::loadObjModel(const char* fileName, Loader& loader)
+RawModel* OBJLoader::loadObjModel(const char* fileName, Loader& loader)
 {
+	char line[BUFFER_SIZE];
+	//for obj loading
+	std::vector<std::vector<float>> g_vertices;
+	std::vector<std::vector<float>> g_texture;
+	std::vector<std::vector<float>> g_normals;
+	std::vector<std::vector<int>> objIndices;
+	std::vector<std::vector<int>> g_face_tri, g_face_texture, g_face_normal;
+	unsigned long long int fSize;
+
+	GLfloat* vArray;
+	GLfloat* nArray;
+	GLfloat* tArray;
+	GLfloat* indicess;
+
 	FILE* g_fp_objFile = NULL;
 	g_fp_objFile = fopen(fileName, "r"); //TriangleModel5.obj //cubeTrangulated1.obj // MonkeyHead.obj
 
@@ -208,36 +230,10 @@ GLuint OBJLoader::loadObjModel(const char* fileName, Loader& loader)
 	//fprintf(gpFile, "g_vertices:%llu g_texture:%llu g_normals:%llu g_face_tri:%llu\n",
 	//	vSize, tSize, nSize, fSize);
 
-	processVertexData();
-	processTextureData();
-	processNormalsData();
+	vArray = processVertexData(g_vertices,g_face_tri);
+	tArray = processTextureData(g_texture, g_face_texture);
+	nArray = processNormalsData(g_normals, g_face_normal);
 		
 	// here write a new method to load the model in conventional way
-	return (loader.loadToVAO(vertexArray, normalsArray, textureArray, (fSize * 3)));
+	return (loader.loadToVAO(vArray, nArray, tArray, (fSize * 3)));
 }
-
-//
-//float* OBJLoader::getVertices(void)
-//{
-//	return vertexArray;
-//}
-//
-//float* OBJLoader::getNormals(void)
-//{
-//	return normalsArray;
-//}
-//
-//float* OBJLoader::getTextureCoords(void)
-//{
-//	return textureArray;
-//}
-////
-////int* OBJLoader::getIndices(void)
-////{
-////	return indices;
-////}
-//
-//int OBJLoader::getFaceSize(void)
-//{
-//	return fSize;
-//}

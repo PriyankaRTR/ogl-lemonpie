@@ -34,7 +34,7 @@ public:
 	// to load model with indices
 	RawModel* loadToVAO(GLfloat* vArray, GLfloat* nArray, GLfloat* tArray, int* indices, int fSize);
 	// to load model with all data processed
-	GLuint loadToVAO(GLfloat* vArray, GLfloat* nArray, GLfloat* tArray, int fSize);
+	RawModel* loadToVAO(GLfloat* vArray, GLfloat* nArray, GLfloat* tArray, int fSize);
 	void cleanUp(void);
 };
 

@@ -2,6 +2,10 @@
 
 
 
+Texture::Texture()
+{
+}
+
 Texture::Texture(char* RcId)
 {
 	imageResourceId = RcId;

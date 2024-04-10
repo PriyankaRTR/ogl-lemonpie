@@ -14,11 +14,13 @@
 #define IDBITMAP_KUNDALI 100
 #define IDBITMAP_STONE   101
 #define IDBITMAP_GRASS   102
+#define IDBITMAP_TREE	 103
 
 
 class Texture
 {
 public:
+	Texture();
 	Texture(char* RcId);
 	~Texture();
 	GLuint getTextureId(void);

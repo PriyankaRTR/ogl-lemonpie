@@ -7,12 +7,6 @@ GLuint Shader::loadShader(const char* file, GLuint type)
 	GLchar* shaderCode;
 	GLuint shaderObjId = 0;
 	
-	////assign shader object ids
-	//if (type == GL_VERTEX_SHADER)
-	//	vertexShaderID = shaderObjId;
-	//else if (type == GL_FRAGMENT_SHADER)
-	//	fragmentShaderID = shaderObjId;
-
 	if (readFile(file, s))
 	{
 		shaderCode = (GLchar*)s.c_str();
@@ -76,11 +70,6 @@ bool Shader::readFile(const char* pFileName, std::string& outFile)
 	return ret;
 }
 
-
-Shader::Shader()
-{
-	// do nothing
-}
 
 Shader::Shader(const char* fileVertexShader,const char* fileFragmentShader)//, FILE* fp)
 {

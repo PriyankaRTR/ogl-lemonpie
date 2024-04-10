@@ -10,6 +10,7 @@ private:
 	int faceCount;
 
 public:
+	RawModel();
 	RawModel(GLuint vaoID, int vertexCount);
 	//~RawModel();
 	GLuint getVaoID();
