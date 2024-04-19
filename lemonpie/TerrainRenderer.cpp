@@ -64,10 +64,9 @@ void TerrainRenderer::loadViewMatrix(void)
 
 void TerrainRenderer::render(Terrain* terrain, Texture* texture)
 {
-	texture->bindTexture(0);
+	texture->bindTexture();
 	prepareTerrain(terrain);
 	loadModelMatrix(terrain);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	unbindTextureModel();
-
 }

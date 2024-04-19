@@ -1,6 +1,6 @@
 Log File Is Successfully Opened.
 size w- 784, h- 561
 size w- 800, h- 600
-size w- 1536, h- 864
+size w- 1920, h- 1080
 size w- 784, h- 561
 Log File Is Successfully Closed.

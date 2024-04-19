@@ -37,6 +37,8 @@
 #include "TerrainShader.h"
 #include "StaticShader.h"
 #include "EntityRenderer.h"
+#include "Display.h"
+#include "MasterRenderer.h"
 
 #define ENABLE_CAMERA_YAW_ROTATION 1
 #define ENABLE_CAMERA_PITCH_ROTATION 1
@@ -49,7 +51,7 @@
 
 using namespace vmath;
 
-#define OBJ_FILE_PATH "3DModels\\tree.obj"  //MonkeyHead.obj" //singleAeroplane.obj" MonkeyHead.obj
+#define OBJ_FILE_PATH "3DModels\\tree.obj" //MonkeyHead.obj"// //MonkeyHead.obj" //singleAeroplane.obj" MonkeyHead.obj
 
 
 enum
@@ -91,50 +93,10 @@ bool gbFullscreen = false;
 GLfloat currentWidth;
 GLfloat currentHeight;
 
-GLuint gVertexShaderObject;
-GLuint gFragmentShaderObject;
-GLuint gShaderProgramObject;
-
-
-GLuint gVao_cube;
-GLuint gVbo_cube_position;
-GLuint gVbo_cube_normal;
-GLuint gVbo_cube_texture;
-
-
-
-GLuint gModelViewMatrixUniform, gProjectionMatrixUniform;
-GLuint gLdUniform, gKdUniform, gLightPositionUniform;
-GLuint gTextureSamplerUniform;
-
-//******** terrain *********
-GLuint gVertexShaderObjectTerrain;
-GLuint gFragmentShaderObjectTerrain;
-GLuint gShaderProgramObjectTerrain;
-
-GLuint gVao_terrain;
-GLuint gVbo_terrain_position;
-GLuint gVbo_terrain_normal;
-GLuint gVbo_terrain_texture;
-
-GLuint location_transformationMatrix;
-GLuint location_projectionMatrix;
-GLuint location_viewMatrix;
-GLuint location_lightPosition;
-GLuint location_lightColour;
-GLuint location_shineDamper;
-GLuint location_reflectivity;
-GLuint location_sampler;
-
-GLuint gTexture_terrain;
-
-Texture* texture_terrain;
-
-
-
-
 
 //terrain
+GLuint gTexture_terrain;
+Texture* texture_terrain;
 Loader terrainLoader;
 RawModel* terrainModel;
 Terrain* newTerrain;
@@ -148,8 +110,10 @@ Texture* texture_tree;
 StaticShader* staticShader;
 EntityRenderer* entityRenderer;
 TexturedModel* texturedModelTree;
+std::list<Entity> entities;
 //*****************
-
+//master renderer
+MasterRenderer* renderer;
 
 
 GLuint gTexture_Kundali;
@@ -192,7 +156,7 @@ GLfloat* textureArray;
 
 unsigned long long int fSize;
 
-float fov = 45.0f;
+float fov = 70.0f;
 CameraControl* camera;
 
 #ifdef IMGUI_WRAPPER_CLASS
@@ -204,54 +168,6 @@ float yMouseOffset;
 ImVec2 mouseOffset = { 0.0,0.0 }; // ImGui datatype
 #endif
 
-
-
-// test
-
-//TerrainShader *terrainShader;
-void processObjData(void)
-{
-	//unsigned long int size, mallocSize;
-	//int vi, ni, ti;
-	//size = g_face_tri.size();
-	//mallocSize = sizeof(GLfloat) * size * 3 * 3;
-	//vertexArray = (GLfloat *)malloc(mallocSize);
-	//size = g_face_normal.size();
-	//mallocSize = sizeof(GLfloat) * size * 3 * 3;
-	//normalsArray = (GLfloat*)malloc(mallocSize);
-	//size = g_face_texture.size();
-	//mallocSize = sizeof(GLfloat) * size * 3 * 2;
-	//textureArray = (GLfloat*)malloc(mallocSize);
-
-	//int nArrayIndex = 0;
-	//GLfloat arr[9];
-
-	//if (size)
-	//{
-	//	for (int i = 0; i < g_face_tri.size(); i++)
-	//	{
-	//		for (int j = 0; j < g_face_tri[i].size(); j++)
-	//		{
-	//			vi = g_face_tri[i][j] - 1;
-	//			ni = g_face_normal[i][j] - 1;
-	//			ti = g_face_texture[i][j] - 1;
-
-	//			vertexArray[nArrayIndex++] = g_vertices[vi][0];
-	//			normalsArray[nArrayIndex] = g_normals[ni][0];
-	//			textureArray[nArrayIndex] = g_texture[ti][0];
-
-	//			vertexArray[nArrayIndex++] = g_vertices[vi][1];
-	//			normalsArray[nArrayIndex] = g_normals[ni][1];
-	//			textureArray[nArrayIndex] = g_texture[ti][1];
-
-	//			vertexArray[nArrayIndex++] = g_vertices[vi][2];
-	//			normalsArray[nArrayIndex] = g_normals[ni][2];				
-
-	//		}
-	//	}
-	//}
-
-}
 
 //main()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -328,7 +244,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	// monkey setup
 	//objLoader = new ();
-	monkeyModel = OBJLoader::loadObjModel(OBJ_FILE_PATH, monkeyLoader);
+	//monkeyModel = OBJLoader::loadObjModel(OBJ_FILE_PATH, monkeyLoader);
 	/*initImGui(hwnd);*/
 
 
@@ -405,6 +321,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	}
 
+	renderer->cleanup();
+	
 	uninitialize();
 #ifdef IMGUI_WRAPPER_CLASS
 	//clean up ImGui context
@@ -641,170 +559,6 @@ void initialize(void)
 	}
 
 
-	// *** VERTEX SHADER ***
-	// create shader
-	gVertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
-
-	// provide source code to shader
-	const GLchar* vertexShaderSourceCode =
-		"#version 130" \
-		"\n" \
-		"in vec4 vPosition;" \
-		"in vec3 vNormal;" \
-		"in vec2 vTexture0_Coord;" \
-		"uniform mat4 u_model_view_matrix;" \
-		"uniform mat4 u_projection_matrix;" \
-		"uniform int u_LKeyPressed;" \
-		"uniform vec3 u_Ld;" \
-		"uniform vec3 u_Kd;" \
-		"uniform vec4 u_light_position;" \
-		"out vec3 diffuse_light;" \
-		"out vec2 out_texture0_coord;" \
-		"void main(void)" \
-		"{" \
-		"if (u_LKeyPressed == 1)" \
-		"{" \
-		"vec4 eyeCoordinates = u_model_view_matrix * vPosition;" \
-		"vec3 tnorm = normalize(mat3(u_model_view_matrix) * vNormal);" \
-		"vec3 s = normalize(vec3(u_light_position - eyeCoordinates));" \
-		"diffuse_light = u_Ld * u_Kd * max(dot(s, tnorm), 0.0);" \
-		"}" \
-		"gl_Position = u_projection_matrix * u_model_view_matrix * vPosition;" \
-		"out_texture0_coord = vTexture0_Coord;"\
-		"}";
-
-	glShaderSource(gVertexShaderObject, 1, (const GLchar**)&vertexShaderSourceCode, NULL);
-
-	// compile shader
-	glCompileShader(gVertexShaderObject);
-	GLint iInfoLogLength = 0;
-	GLint iShaderCompiledStatus = 0;
-	char* szInfoLog = NULL;
-	glGetShaderiv(gVertexShaderObject, GL_COMPILE_STATUS, &iShaderCompiledStatus);
-	if (iShaderCompiledStatus == GL_FALSE)
-	{
-		glGetShaderiv(gVertexShaderObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
-		if (iInfoLogLength > 0)
-		{
-			szInfoLog = (char*)malloc(iInfoLogLength);
-			if (szInfoLog != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(gVertexShaderObject, iInfoLogLength, &written, szInfoLog);
-				fprintf(gpFile, "Vertex Shader Compilation Log : %s\n", szInfoLog);
-				free(szInfoLog);
-				uninitialize();
-				exit(0);
-			}
-		}
-	}
-
-	// *** FRAGMENT SHADER ***
-	// create shader
-	gFragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
-
-	// provide source code to shader
-	const GLchar* fragmentShaderSourceCode =
-		"#version 130" \
-		"\n" \
-		"in vec3 diffuse_light;" \
-		"in vec2 out_texture0_coord;" \
-		"out vec4 FragColor;" \
-		"uniform int u_LKeyPressed;" \
-		"uniform sampler2D u_texture0_sampler;"\
-		"void main(void)" \
-		"{" \
-		"vec4 color;" \
-		"if (u_LKeyPressed == 1)" \
-		"{" \
-		"color = vec4(diffuse_light,1.0);" \
-		"}" \
-		"else" \
-		"{" \
-		"color = vec4(1.0, 1.0, 1.0, 1.0);" \
-		"}" \
-		"FragColor = color * texture(u_texture0_sampler, out_texture0_coord);" \
-		"}";
-
-	glShaderSource(gFragmentShaderObject, 1, (const GLchar**)&fragmentShaderSourceCode, NULL);
-
-	// compile shader
-	glCompileShader(gFragmentShaderObject);
-	glGetShaderiv(gFragmentShaderObject, GL_COMPILE_STATUS, &iShaderCompiledStatus);
-	if (iShaderCompiledStatus == GL_FALSE)
-	{
-		glGetShaderiv(gFragmentShaderObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
-		if (iInfoLogLength > 0)
-		{
-			szInfoLog = (char*)malloc(iInfoLogLength);
-			if (szInfoLog != NULL)
-			{
-				GLsizei written;
-				glGetShaderInfoLog(gFragmentShaderObject, iInfoLogLength, &written, szInfoLog);
-				fprintf(gpFile, "Fragment Shader Compilation Log : %s\n", szInfoLog);
-				free(szInfoLog);
-				uninitialize();
-				exit(0);
-			}
-		}
-	}
-
-	// *** SHADER PROGRAM ***
-	// create
-	gShaderProgramObject = glCreateProgram();
-
-	// attach vertex shader to shader program
-	glAttachShader(gShaderProgramObject, gVertexShaderObject);
-
-	// attach fragment shader to shader program
-	glAttachShader(gShaderProgramObject, gFragmentShaderObject);
-
-	// pre-link binding of shader program object with vertex shader position attribute
-	//glBindAttribLocation(gShaderProgramObject, VDG_ATTRIBUTE_VERTEX, "vPosition");
-	//glBindAttribLocation(gShaderProgramObject, VDG_ATTRIBUTE_NORMAL, "vNormal");
-	//glBindAttribLocation(gShaderProgramObject, VDG_ATTRIBUTE_TEXTURE0, "vTexture0_Coord");
-
-	glBindAttribLocation(gShaderProgramObject, 0, "vPosition");
-	glBindAttribLocation(gShaderProgramObject, 2, "vNormal");
-	glBindAttribLocation(gShaderProgramObject, 1, "vTexture0_Coord");
-
-	// link shader
-	glLinkProgram(gShaderProgramObject);
-	GLint iShaderProgramLinkStatus = 0;
-	glGetProgramiv(gShaderProgramObject, GL_LINK_STATUS, &iShaderProgramLinkStatus);
-	if (iShaderProgramLinkStatus == GL_FALSE)
-	{
-		glGetProgramiv(gShaderProgramObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
-		if (iInfoLogLength > 0)
-		{
-			szInfoLog = (char*)malloc(iInfoLogLength);
-			if (szInfoLog != NULL)
-			{
-				GLsizei written;
-				glGetProgramInfoLog(gShaderProgramObject, iInfoLogLength, &written, szInfoLog);
-				fprintf(gpFile, "Shader Program Link Log : %s\n", szInfoLog);
-				free(szInfoLog);
-				uninitialize();
-				exit(0);
-			}
-		}
-	}
-
-	// get uniform locations
-	gModelViewMatrixUniform = glGetUniformLocation(gShaderProgramObject, "u_model_view_matrix");
-	gProjectionMatrixUniform = glGetUniformLocation(gShaderProgramObject, "u_projection_matrix");
-
-	gLKeyPressedUniform = glGetUniformLocation(gShaderProgramObject, "u_LKeyPressed");
-
-	gLdUniform = glGetUniformLocation(gShaderProgramObject, "u_Ld");
-	gKdUniform = glGetUniformLocation(gShaderProgramObject, "u_Kd");
-	gLightPositionUniform = glGetUniformLocation(gShaderProgramObject, "u_light_position");
-
-	gTextureSamplerUniform = glGetUniformLocation(gShaderProgramObject, "u_texture0_sampler");
-	
-
-
-
 	glShadeModel(GL_SMOOTH);
 	// set-up depth buffer
 	glClearDepth(1.0f);
@@ -822,20 +576,38 @@ void initialize(void)
 	newTerrain = new Terrain(0, 0, terrainLoader);
 	terrainShader = new TerrainShader("Shaders/terrain.vs", "Shaders/terrain.fs");
 	terrainRenderer = new TerrainRenderer(terrainShader, gPerspectiveProjectionMatrix);
-	texture_MonkeyHead = new Texture(MAKEINTRESOURCE(IDBITMAP_STONE));
-	gTexture_Stone = texture_MonkeyHead->LoadGLTextures(); // add error check here FE - future enhancements
 	//LoadGLTextures(&gTexture_Kundali, MAKEINTRESOURCE(IDBITMAP_KUNDALI));
 	//LoadGLTextures(&gTexture_Stone, MAKEINTRESOURCE(IDBITMAP_STONE));
 	texture_terrain = new Texture(MAKEINTRESOURCE(IDBITMAP_GRASS));
-	gTexture_terrain = texture_terrain->LoadGLTextures();
+	if (texture_terrain->LoadGLTextures())
+	{
+		//texture loaded successfully
+	}
 
 	// tree setup
 	treeModel = OBJLoader::loadObjModel(OBJ_FILE_PATH, treeLoader);
-	staticShader = new StaticShader("Shaders/staticVertShader.vs", "Shaders/staticFragShader.fs");
-	entityRenderer = new EntityRenderer(staticShader, gPerspectiveProjectionMatrix);
+	//staticShader = new StaticShader("Shaders/staticVertShader.vs", "Shaders/staticFragShader.fs");
+	//entityRenderer = new EntityRenderer(staticShader, gPerspectiveProjectionMatrix);
 	texture_tree = new Texture(MAKEINTRESOURCE(IDBITMAP_TREE));
-	GLuint gTexture_tree = texture_tree->LoadGLTextures();
+	if (texture_tree->LoadGLTextures())
+	{
+		// texture successfully loaded
+	}		
 	texturedModelTree = new TexturedModel(treeModel, texture_tree);
+
+	for(int i =0; i<100;i++)
+	{
+		float x_coord = (float)(rand()%100 -50);
+		float z_coord = (float)(rand() % 100 - 100);
+		entities.push_back(Entity(texturedModelTree, vec3(x_coord, 0.0f, z_coord), 0.0f, 0.0f, 0.0f, 1.0f));
+	}
+
+	//entities.push_back(Entity(texturedModelTree, vec3(3.0f, 0.0f, -10.0f), 0.0f, 0.0f, 0.0f, 1.0f));
+	//entities.push_back(Entity(texturedModelTree, vec3(0.0f, 2.0f, -10.0f), 0.0f, 0.0f, 0.0f, 1.0f));
+	renderer = new MasterRenderer();
+
+
+
 	// set background color
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // black
 
@@ -848,14 +620,6 @@ void initialize(void)
 
 	// resize
 	resize(WIN_WIDTH, WIN_HEIGHT);
-}
-
-
-void loadTransformationMatrix(void)
-{
-	mat4 transformationMatrix = mat4::identity();
-	transformationMatrix = translate(newTerrain->getX(), 0.0f, newTerrain->getZ());
-	glUniformMatrix4fv(location_transformationMatrix, 1, GL_FALSE, transformationMatrix);
 }
 
 
@@ -876,15 +640,22 @@ void renderTerrainTest(void)
 
 void renderEntityTest(void)
 {
-	mat4 projMatrixTree = mat4::identity();
 	Light lightForTree(vec3(1000.0f, 1000.0f, 1000.0f), vec3(1.0, 1.0, 1.0));
-	staticShader->start();
-	staticShader->loadLight(lightForTree);
-	projMatrixTree = perspective(fov, (GLfloat)currentWidth / (GLfloat)currentHeight, 0.1f, 1000.0f);
-	staticShader->loadProjectionMatrix(projMatrixTree);
-	staticShader->loadViewMatrix(camera);
-	entityRenderer->render(texturedModelTree);
-	staticShader->stop();
+	for (Entity entity : entities)
+	{
+		renderer->processEntity(entity);
+	}
+	renderer->render(lightForTree, camera);
+
+	//mat4 projMatrixTree = mat4::identity();
+	//Light lightForTree(vec3(1000.0f, 1000.0f, 1000.0f), vec3(1.0, 1.0, 1.0));
+	//staticShader->start();
+	//staticShader->loadLight(lightForTree);
+	//projMatrixTree = perspective(fov, (GLfloat)currentWidth / (GLfloat)currentHeight, 0.1f, 1000.0f);
+	//staticShader->loadProjectionMatrix(projMatrixTree);
+	//staticShader->loadViewMatrix(camera);
+	//entityRenderer->render(texturedModelTree);
+	//staticShader->stop();
 }
 
 void display(void)
@@ -893,102 +664,8 @@ void display(void)
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//glClearColor(0.49f, 89.0f, 0.98f, 1);
-	glClearColor(0.0f, 0.0f, 0.0f, 1);
-
-	//// start using OpenGL program object
-	//glUseProgram(gShaderProgramObject);
-
-	//if (gbLight == true)
-	//{
-	//	glUniform1i(gLKeyPressedUniform, 1);
-
-	//	glUniform3f(gLdUniform, 1.0f, 1.0f, 1.0f);
-	//	glUniform3f(gKdUniform, 1.0f, 1.0f, 1.0f);//0.5f, 0.5f, 0.5f);
-
-	//	float lightPosition[] = { 0.0f, 0.0f, 2.0f, 1.0f };
-	//	glUniform4fv(gLightPositionUniform, 1, (GLfloat*)lightPosition);
-	//}
-	//else
-	//{
-	//	glUniform1i(gLKeyPressedUniform, 0);
-	//}
-
-	//// OpenGL Drawing
-	//// set all matrices to identity
-	//mat4 modelMatrix = mat4::identity();
-	//mat4 viewMatrix = mat4::identity();
-	//mat4 modelViewMatrix = mat4::identity();
-	//mat4 rotationMatrix = mat4::identity();
-
-	////modelMatrix = scale(10.0, 10.0, 10.0);
-	//// apply z axis translation to go deep into the screen by -5.0,
-	//// so that triangle with same fullscreen co-ordinates, but due to above translation will look small
-	//modelMatrix = translate(0.0f, 0.0f, -5.0f);
-
-	////input from ImGui
- //  //gAngle = ImGuiWrapper->getInputCameraAngle();
-	//float radius = 5.0f; // 5.0 MonkeyHead // 50.0 singleAeroplane
-	//float y_coord = radius * cos(radians(gAngle));
-	//float z_coord = radius * sin(radians(gAngle));
-
-	////this is to calculate tangent OTG. since the camera rotation plane is Y-Z & as per our requirement we want to move around the object keeping Y- as up direction at start
-	////this up direction needs to be updated as we move ahead.
-	////Hence we calculate tangent vector to the circle by taking cross product of the camera vector(normalized) and positive X axis as right direction. 
-	//vec3 f = normalize(vec3(0.0, y_coord, z_coord));
-	//vec3 up_direction = cross(f, vec3(1.0, 0.0, 0.0));
-
-	//viewMatrix = camera->getLookAtMatrix();
-	////viewMatrix = lookat(cameraPos, cameraPos + cameraFront, cameraUp);
-	////viewMatrix = lookat(vec3(0.0, y_coord, z_coord), vec3(0.0, 0.0, 0.0), up_direction);
-	////viewMatrix = lookat(vec3(z_coord, y_coord, 0.0), vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
-	//// all axes rotation by gAngle angle
-	//rotationMatrix = rotate(0.0f, gAngle, 0.0f);
-
-
-
-	//// multiply rotation matrix and model matrix to get modelView matrix
-	////modelViewMatrix = modelMatrix * rotationMatrix; // ORDER IS IMPORTANT
-	//modelMatrix = modelMatrix * rotationMatrix;
-	//modelViewMatrix = viewMatrix * modelMatrix;
-	//ImGuiWrapper->setMatrix(modelViewMatrix);
-	//// pass modelview matrix to the vertex shader in 'u_model_view_matrix' shader variable
-	//// whose position value we already calculated in initialize() by using glGetUniformLocation()
-	//glUniformMatrix4fv(gModelViewMatrixUniform, 1, GL_FALSE, modelViewMatrix);
-
-	//// pass projection matrix to the vertex shader in 'u_projection_matrix' shader variable
-	//// whose position value we already calculated in initialize() by using glGetUniformLocation()
-	//gPerspectiveProjectionMatrix = perspective(fov, (GLfloat)currentWidth / (GLfloat)currentHeight, 0.1f, 1000.0f);
-	//glUniformMatrix4fv(gProjectionMatrixUniform, 1, GL_FALSE, gPerspectiveProjectionMatrix);
-	////glUniformMatrix4fv(gProjectionMatrixUniform, 1, GL_FALSE, gOrthographicProjectionMatrix);
-
-	//texture_MonkeyHead->bindTexture(0);
-	///*glActiveTexture(GL_TEXTURE);
-	//glBindTexture(GL_TEXTURE_2D, texture_MonkeyHead->getTextureId());*/
-	//glUniform1i(gTextureSamplerUniform, 0);
-
-
-	//// *** bind vao ***
-	//glBindVertexArray(monkeyModel->getVaoID());// gVao_cube);
-	//glEnableVertexAttribArray(0);
-	//glEnableVertexAttribArray(1);
-	//glEnableVertexAttribArray(2);
-	//// *** draw, either by glDrawTriangles() or glDrawArrays() or glDrawElements()
-
-	////glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	////glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
-	////glDrawArrays(GL_TRIANGLE_FAN, 8, 4);
-	////glDrawArrays(GL_TRIANGLE_FAN, 12, 4);
-	////glDrawArrays(GL_TRIANGLE_FAN, 16, 4);
-	////glDrawArrays(GL_TRIANGLE_FAN, 20, 4);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	//glDrawArrays(GL_TRIANGLES, 0, (968 * 3 * 3)); // 9  for triangle 1*3*3 // 108 for cube 12*3*3 // 968*3*3 = 8712 for monkey head
-
-	//// *** unbind vao ***
-	//glBindVertexArray(0);
-
-	// //stop using OpenGL program object
-	//glUseProgram(0);
+	glClearColor(0.49f, 89.0f, 0.98f, 1);
+	//glClearColor(0.0f, 0.0f, 0.0f, 1);
 
 	renderEntityTest();
 
@@ -1019,6 +696,8 @@ void resize(int width, int height)
 	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 	currentWidth = (GLfloat)width;
 	currentHeight = (GLfloat)height;
+	Display::winWidth = width;
+	Display::winHeight = height;
 	fprintf(gpFile, "size w- %d, h- %d\n", width, height);
 	gPerspectiveProjectionMatrix = perspective(fov, (GLfloat)width / (GLfloat)height, 0.1f, 1000.0f);
 
@@ -1050,53 +729,45 @@ void uninitialize(void)
 
 	}
 
-	if (gVao_terrain)
-	{
-		glDeleteBuffers(1, &gVao_terrain);
-		gVao_terrain = 0;
-	}
+	//// destroy vao
+	//if (gVao_cube)
+	//{
+	//	glDeleteVertexArrays(1, &gVao_cube);
+	//	gVao_cube = 0;
+	//}
 
-	
+	//// destroy position vbo
+	//if (gVbo_cube_position)
+	//{
+	//	glDeleteBuffers(1, &gVbo_cube_position);
+	//	gVbo_cube_position = 0;
+	//}
 
-	// destroy vao
-	if (gVao_cube)
-	{
-		glDeleteVertexArrays(1, &gVao_cube);
-		gVao_cube = 0;
-	}
+	//// destroy normal vbo
+	//if (gVbo_cube_normal)
+	//{
+	//	glDeleteBuffers(1, &gVbo_cube_normal);
+	//	gVbo_cube_normal = 0;
+	//}
 
-	// destroy position vbo
-	if (gVbo_cube_position)
-	{
-		glDeleteBuffers(1, &gVbo_cube_position);
-		gVbo_cube_position = 0;
-	}
+	//if (gShaderProgramObject)
+	//{
+	//	// detach vertex shader from shader program object
+	//	glDetachShader(gShaderProgramObject, gVertexShaderObject);
+	//	// detach fragment  shader from shader program object
+	//	glDetachShader(gShaderProgramObject, gFragmentShaderObject);
 
-	// destroy normal vbo
-	if (gVbo_cube_normal)
-	{
-		glDeleteBuffers(1, &gVbo_cube_normal);
-		gVbo_cube_normal = 0;
-	}
+	//	// delete vertex shader object
+	//	glDeleteShader(gVertexShaderObject);
+	//	gVertexShaderObject = 0;
+	//	// delete fragment shader object
+	//	glDeleteShader(gFragmentShaderObject);
+	//	gFragmentShaderObject = 0;
 
-	if (gShaderProgramObject)
-	{
-		// detach vertex shader from shader program object
-		glDetachShader(gShaderProgramObject, gVertexShaderObject);
-		// detach fragment  shader from shader program object
-		glDetachShader(gShaderProgramObject, gFragmentShaderObject);
-
-		// delete vertex shader object
-		glDeleteShader(gVertexShaderObject);
-		gVertexShaderObject = 0;
-		// delete fragment shader object
-		glDeleteShader(gFragmentShaderObject);
-		gFragmentShaderObject = 0;
-
-		// delete shader program object
-		glDeleteProgram(gShaderProgramObject);
-		gShaderProgramObject = 0;
-	}
+	//	// delete shader program object
+	//	glDeleteProgram(gShaderProgramObject);
+	//	gShaderProgramObject = 0;
+	//}
 
 	if (monkeyModel)
 	{
@@ -1241,4 +912,6 @@ void cleanUp(void)
 		texturedModelTree = NULL;
 	}
 
+	if (renderer)
+		delete renderer;
 }

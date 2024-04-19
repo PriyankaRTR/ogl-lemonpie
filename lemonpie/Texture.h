@@ -26,9 +26,9 @@ public:
 	GLuint getTextureId(void);
 	GLuint LoadGLTextures(void); 	// (GLuint* texture, TCHAR imageResourceId[]);
 	void cleanUp(void);
-	void bindTexture(int index);
+	void bindTexture(void);
 
 private:
 	char* imageResourceId;
-	std::vector<GLuint> textures;
+	GLuint textureId;
 };  

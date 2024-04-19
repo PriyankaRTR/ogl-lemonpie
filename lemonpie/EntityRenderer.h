@@ -3,12 +3,16 @@
 #include "Terrain.h"
 #include "Texture.h"
 #include "TexturedModel.h"
+#include <map>
+#include <list>
+#include "Entity.h"
 
 class EntityRenderer
 {
 private:
 	StaticShader* shader;
 	void prepareTexturedModel(TexturedModel* model);
+	void prepareInstance(Entity entity);
 	void loadTransformationMatrix(void);
 	void loadModelMatrix(TexturedModel* model);
 	void unbindTextureModel(void);
@@ -16,7 +20,8 @@ private:
 
 public:
 	EntityRenderer(StaticShader* shader, mat4 projectionMatrix);
-	void render(TexturedModel* model);
+	~EntityRenderer();
+	void render(std::map<TexturedModel*, std::list<Entity>> &entities);
 
 };
 

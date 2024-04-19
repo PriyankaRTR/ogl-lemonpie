@@ -1,7 +1,7 @@
 #include "Loader.h"
 
 
-RawModel* Loader::loadToVAO(GLfloat* vArray, GLfloat* nArray, GLfloat* tArray, int* indices, int fSize)
+RawModel* Loader::loadToVAO(GLfloat* vArray, GLfloat* tArray, GLfloat* nArray, int* indices, int fSize)
 {
 	GLuint vaoID = createVAO(); 
 	bindIndicesBuffer(indices, fSize);

@@ -91,6 +91,11 @@ Shader::Shader(const char* fileVertexShader,const char* fileFragmentShader)//, F
 	//getAllUniformLocations();
 }
 
+Shader::~Shader()
+{
+	
+}
+
 void Shader::start(void)
 {
 	glUseProgram(programID);

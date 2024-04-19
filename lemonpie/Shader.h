@@ -22,6 +22,7 @@ private:
 	
 public:
 	Shader(const char* fileVertexShader, const char* fileFragmentShader);// , FILE* fp);
+	~Shader();
 	void start(void);
 	void stop(void);
 	void cleanUp(void);

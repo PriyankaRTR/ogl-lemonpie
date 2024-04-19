@@ -9,6 +9,7 @@ Texture::Texture()
 Texture::Texture(char* RcId)
 {
 	imageResourceId = RcId;
+	textureId = 0;
 }
 
 Texture::~Texture()
@@ -19,7 +20,7 @@ Texture::~Texture()
 
 GLuint Texture::LoadGLTextures()//(GLuint* texture, TCHAR imageResourceId[])
 {
-	GLuint textureId = 0;
+	//GLuint textureId = 0;
 	// variable declarations
 	HBITMAP hBitmap;
 	BITMAP bmp;
@@ -50,27 +51,27 @@ GLuint Texture::LoadGLTextures()//(GLuint* texture, TCHAR imageResourceId[])
 
 		DeleteObject(hBitmap);// delete unwanted bitmap handle
 	}
-	textures.push_back(textureId);
-	return(textureId);
+	//textures.push_back(textureId);
+	return(true);
 }
 
 GLuint Texture::getTextureId(void)
 {
-	//return textureId;
-	return 0;
+	return textureId;
+	//return 0;
 }
 
 void Texture::cleanUp(void)
 {
-	for (GLuint texture : textures)
+	//for (GLuint texture : textures)
 	{
-		glDeleteTextures(1, &texture);
+		glDeleteTextures(1, &textureId);
 	}
-	textures.clear();
+	//textures.clear();
 }
 
-void Texture::bindTexture(int index)
+void Texture::bindTexture(void)
 {
 	glActiveTexture(GL_TEXTURE);
-	glBindTexture(GL_TEXTURE_2D, textures[index]);
+	glBindTexture(GL_TEXTURE_2D, textureId);
 }

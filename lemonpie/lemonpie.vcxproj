@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CameraControl.cpp" />
+    <ClCompile Include="Display.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="EntityRenderer.cpp" />
     <ClCompile Include="ImGui\backends\imgui_impl_opengl3.cpp" />
@@ -33,6 +34,7 @@
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Loader.cpp" />
     <ClCompile Include="mainTarrain.cpp" />
+    <ClCompile Include="MasterRenderer.cpp" />
     <ClCompile Include="OBJLoader.cpp" />
     <ClCompile Include="RawModel.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -45,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraControl.h" />
+    <ClInclude Include="Display.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="EntityRenderer.h" />
     <ClInclude Include="ImGui\backends\imgui_impl_opengl3.h" />
@@ -59,6 +62,7 @@
     <ClInclude Include="ImGui_Wrapper.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Loader.h" />
+    <ClInclude Include="MasterRenderer.h" />
     <ClInclude Include="OBJLoader.h" />
     <ClInclude Include="RawModel.h" />
     <ClInclude Include="Shader.h" />
@@ -90,6 +94,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
+    <EnableASAN>true</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
