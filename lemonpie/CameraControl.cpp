@@ -12,7 +12,7 @@ CameraControl::CameraControl(float posX, float posY, float posZ, float tragetX, 
 	cameraPitch = 0.0;
 	cameraSpeed = 1.0f;
 	sensitivity = 0.005f;
-	fov = 45.0f;
+	fov = 70.0f;
 }
 
 CameraControl::~CameraControl()
@@ -100,8 +100,8 @@ void CameraControl::updatefov(float Offset)
 		fov = Offset; // yOffset
 		if (fov < 1.0)
 			fov = 1.0;
-		else if (fov > 45.0)
-			fov = 45.0;
+		else if (fov > 70.0)
+			fov = 70.0;
 	}
 	
 }

@@ -60,7 +60,7 @@ void EntityRenderer::loadTransformationMatrix(void)
 void EntityRenderer::loadModelMatrix(TexturedModel* model)
 {
 	mat4 transformationMatrix = mat4::identity();
-	transformationMatrix = translate(0.0f, 0.0f, -10.0f);
+	//transformationMatrix = translate(0.0f, 0.0f, -10.0f);
 	shader->loadTransformationMatrix(transformationMatrix);
 	//glUniformMatrix4fv(location_transformationMatrix, 1, GL_FALSE, transformationMatrix);
 }

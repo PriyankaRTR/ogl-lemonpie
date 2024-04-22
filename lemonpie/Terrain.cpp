@@ -15,7 +15,7 @@ RawModel* Terrain::generateTerrain(Loader& loader)
 		for (int j = 0; j < VERTEX_COUNT; j++) {
 			vertices[vertexPointer * 3] = (float)j / ((float)VERTEX_COUNT - 1) * SIZE;
 			vertices[vertexPointer * 3 + 1] = 0.0f;
-			vertices[vertexPointer * 3 + 2] = (float)i / ((float)VERTEX_COUNT - 1) * SIZE;
+			vertices[vertexPointer * 3 + 2] = -((float)i / ((float)VERTEX_COUNT - 1) * SIZE);
 			normals[vertexPointer * 3] = 0.0f;  
 			normals[vertexPointer * 3 + 1] = 1.0f;
 			normals[vertexPointer * 3 + 2] = 0.0f;
@@ -70,6 +70,8 @@ Terrain::~Terrain()
 	normals = NULL;
 	free(textureCoords);
 	textureCoords = NULL;
+	free(indices);
+	indices = NULL;
 }
 
 RawModel* Terrain::getModel(void)

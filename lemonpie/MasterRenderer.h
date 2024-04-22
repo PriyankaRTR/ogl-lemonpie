@@ -21,21 +21,22 @@ private:
 	StaticShader* shader;
 	EntityRenderer* renderer;
 
-	//TerrainShader* terrainShader;
-	//TerrainRenderer* terrainRenderer;
+	TerrainShader* terrainShader;
+	TerrainRenderer* terrainRenderer;
+	Texture* terrainTexture;
 
 	std::map<TexturedModel*, std::list<Entity>> entities;
 
 	//int width;
 	//int height;
-	//std::list<Terrain>* terrains;
+	std::list<Terrain*> terrains;
 
 public:
 
 	MasterRenderer();
 	~MasterRenderer();
 		
-	//void processTerrain(Terrain terrain);
+	void processTerrain(Terrain* terrain);
 	void processEntity(Entity entity);
 	void prepare(void);
 	void render(Light sun, CameraControl* camera);

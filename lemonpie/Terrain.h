@@ -38,5 +38,6 @@ public:
 	float getX(void);
 	float getZ(void);
 
+
 };
 

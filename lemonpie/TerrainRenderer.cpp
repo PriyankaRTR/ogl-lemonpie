@@ -62,11 +62,16 @@ void TerrainRenderer::loadViewMatrix(void)
 }
 
 
-void TerrainRenderer::render(Terrain* terrain, Texture* texture)
+void TerrainRenderer::render(std::list<Terrain*> terrains, Texture* texture)
 {
 	texture->bindTexture();
-	prepareTerrain(terrain);
-	loadModelMatrix(terrain);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-	unbindTextureModel();
+
+	for (auto& terrain : terrains)
+	{
+		prepareTerrain(terrain);
+		loadModelMatrix(terrain);
+		glDrawElements(GL_TRIANGLES, terrain->getModel()->getVertexCount(), GL_UNSIGNED_INT, 0);
+		unbindTextureModel();
+	}
+	
 }

@@ -4,6 +4,7 @@
 #include "TerrainShader.h"
 #include "Texture.h"
 #include "vmath.h"
+#include <list>
 
 class TerrainRenderer
 {
@@ -18,6 +19,6 @@ private:
 
 public:
 	TerrainRenderer(TerrainShader* shader, mat4 projectionMatrix);
-	void render(Terrain* terrain, Texture* texture);
+	void render(std::list<Terrain*> terrains, Texture* texture);
 };
 

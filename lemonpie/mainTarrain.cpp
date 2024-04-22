@@ -94,12 +94,14 @@ GLfloat currentWidth;
 GLfloat currentHeight;
 
 
+Light sun(vec3(1000.0f, 1000.0f, 1000.0f), vec3(1.0, 1.0, 1.0));
 //terrain
 GLuint gTexture_terrain;
 Texture* texture_terrain;
 Loader terrainLoader;
 RawModel* terrainModel;
-Terrain* newTerrain;
+Terrain* terrain1;
+Terrain* terrain2;
 TerrainShader* terrainShader;
 TerrainRenderer* terrainRenderer;
 
@@ -269,7 +271,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 #endif
 
-	camera = new CameraControl(0.0f, 0.1f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+	camera = new CameraControl(0.0f, 3.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
 	//Message Loop
 	while (bDone == false) //Parallel to glutMainLoop();
@@ -322,7 +324,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	}
 
 	renderer->cleanup();
-	
+	terrainLoader.cleanUp();
 	uninitialize();
 #ifdef IMGUI_WRAPPER_CLASS
 	//clean up ImGui context
@@ -573,16 +575,17 @@ void initialize(void)
 
 
 	// terrain setup
-	newTerrain = new Terrain(0, 0, terrainLoader);
-	terrainShader = new TerrainShader("Shaders/terrain.vs", "Shaders/terrain.fs");
-	terrainRenderer = new TerrainRenderer(terrainShader, gPerspectiveProjectionMatrix);
+	terrain1 = new Terrain(0, 0, terrainLoader);
+	terrain2 = new Terrain(-1, 0, terrainLoader);
+	/*terrainShader = new TerrainShader("Shaders/terrain.vs", "Shaders/terrain.fs");
+	terrainRenderer = new TerrainRenderer(terrainShader, gPerspectiveProjectionMatrix);*/
 	//LoadGLTextures(&gTexture_Kundali, MAKEINTRESOURCE(IDBITMAP_KUNDALI));
 	//LoadGLTextures(&gTexture_Stone, MAKEINTRESOURCE(IDBITMAP_STONE));
-	texture_terrain = new Texture(MAKEINTRESOURCE(IDBITMAP_GRASS));
+	/*texture_terrain = new Texture(MAKEINTRESOURCE(IDBITMAP_GRASS));
 	if (texture_terrain->LoadGLTextures())
 	{
-		//texture loaded successfully
-	}
+		texture loaded successfully
+	}*/
 
 	// tree setup
 	treeModel = OBJLoader::loadObjModel(OBJ_FILE_PATH, treeLoader);
@@ -625,27 +628,29 @@ void initialize(void)
 
 void renderTerrainTest(void)
 {
-	mat4 projMatrixTerrain = mat4::identity();
-	Light lightForTarrian(vec3(1000.0f, 1000.0f, 1000.0f), vec3(1.0,1.0,1.0));
-	terrainShader->start();
-	terrainShader->loadLight(lightForTarrian);
-	projMatrixTerrain = perspective(fov, (GLfloat)currentWidth / (GLfloat)currentHeight, 0.1f, 1000.0f);
-	terrainShader->loadProjectionMatrix(projMatrixTerrain);
-	terrainShader->loadViewMatrix(camera);
-	//texture_terrain->bindTexture(0);
-	//glUniform1i(location_sampler, 0);
-	terrainRenderer->render(newTerrain, texture_terrain);
-	terrainShader->stop();
+	//mat4 projMatrixTerrain = mat4::identity();
+	//Light lightForTarrian(vec3(1000.0f, 1000.0f, 1000.0f), vec3(1.0,1.0,1.0));
+	//terrainShader->start();
+	//terrainShader->loadLight(lightForTarrian);
+	//projMatrixTerrain = perspective(fov, (GLfloat)currentWidth / (GLfloat)currentHeight, 0.1f, 1000.0f);
+	//terrainShader->loadProjectionMatrix(projMatrixTerrain);
+	//terrainShader->loadViewMatrix(camera);
+	////texture_terrain->bindTexture(0);
+	////glUniform1i(location_sampler, 0);
+	//terrainRenderer->render(newTerrain, texture_terrain);
+	//terrainShader->stop();
 }
 
 void renderEntityTest(void)
 {
-	Light lightForTree(vec3(1000.0f, 1000.0f, 1000.0f), vec3(1.0, 1.0, 1.0));
+	renderer->processTerrain(terrain1);
+	renderer->processTerrain(terrain2);
+
 	for (Entity entity : entities)
 	{
 		renderer->processEntity(entity);
 	}
-	renderer->render(lightForTree, camera);
+	renderer->render(sun, camera);
 
 	//mat4 projMatrixTree = mat4::identity();
 	//Light lightForTree(vec3(1000.0f, 1000.0f, 1000.0f), vec3(1.0, 1.0, 1.0));
@@ -669,7 +674,7 @@ void display(void)
 
 	renderEntityTest();
 
-	renderTerrainTest();
+	//renderTerrainTest();
 	//gAngle++;
 
 }
@@ -827,12 +832,20 @@ void cleanUp(void)
 		textureArray = NULL;
 	}
 
-	if (newTerrain)
+	if (terrain1)
 	{
-		delete newTerrain;
-		newTerrain = NULL;
+		delete terrain1;
+		terrain1 = NULL;
 
 	}
+
+	if (terrain2)
+	{
+		delete terrain2;
+		terrain2 = NULL;
+
+	}
+
 
 	if (terrainShader)
 	{
