@@ -44,6 +44,8 @@ MasterRenderer::~MasterRenderer()
 
 void MasterRenderer::render(Light sun, CameraControl *camera)
 {
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_BACK);
 	//prepare();
 	shader->start();
 	shader->loadLight(sun);

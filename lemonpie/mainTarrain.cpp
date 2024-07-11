@@ -577,6 +577,7 @@ void initialize(void)
 	// terrain setup
 	terrain1 = new Terrain(0, 0, terrainLoader);
 	terrain2 = new Terrain(-1, 0, terrainLoader);
+
 	/*terrainShader = new TerrainShader("Shaders/terrain.vs", "Shaders/terrain.fs");
 	terrainRenderer = new TerrainRenderer(terrainShader, gPerspectiveProjectionMatrix);*/
 	//LoadGLTextures(&gTexture_Kundali, MAKEINTRESOURCE(IDBITMAP_KUNDALI));
@@ -626,25 +627,11 @@ void initialize(void)
 }
 
 
-void renderTerrainTest(void)
-{
-	//mat4 projMatrixTerrain = mat4::identity();
-	//Light lightForTarrian(vec3(1000.0f, 1000.0f, 1000.0f), vec3(1.0,1.0,1.0));
-	//terrainShader->start();
-	//terrainShader->loadLight(lightForTarrian);
-	//projMatrixTerrain = perspective(fov, (GLfloat)currentWidth / (GLfloat)currentHeight, 0.1f, 1000.0f);
-	//terrainShader->loadProjectionMatrix(projMatrixTerrain);
-	//terrainShader->loadViewMatrix(camera);
-	////texture_terrain->bindTexture(0);
-	////glUniform1i(location_sampler, 0);
-	//terrainRenderer->render(newTerrain, texture_terrain);
-	//terrainShader->stop();
-}
-
 void renderEntityTest(void)
 {
 	renderer->processTerrain(terrain1);
 	renderer->processTerrain(terrain2);
+	
 
 	for (Entity entity : entities)
 	{
@@ -670,12 +657,8 @@ void display(void)
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(0.49f, 89.0f, 0.98f, 1);
-	//glClearColor(0.0f, 0.0f, 0.0f, 1);
-
+	
 	renderEntityTest();
-
-	//renderTerrainTest();
-	//gAngle++;
 
 }
 
@@ -733,46 +716,6 @@ void uninitialize(void)
 		ShowCursor(TRUE);
 
 	}
-
-	//// destroy vao
-	//if (gVao_cube)
-	//{
-	//	glDeleteVertexArrays(1, &gVao_cube);
-	//	gVao_cube = 0;
-	//}
-
-	//// destroy position vbo
-	//if (gVbo_cube_position)
-	//{
-	//	glDeleteBuffers(1, &gVbo_cube_position);
-	//	gVbo_cube_position = 0;
-	//}
-
-	//// destroy normal vbo
-	//if (gVbo_cube_normal)
-	//{
-	//	glDeleteBuffers(1, &gVbo_cube_normal);
-	//	gVbo_cube_normal = 0;
-	//}
-
-	//if (gShaderProgramObject)
-	//{
-	//	// detach vertex shader from shader program object
-	//	glDetachShader(gShaderProgramObject, gVertexShaderObject);
-	//	// detach fragment  shader from shader program object
-	//	glDetachShader(gShaderProgramObject, gFragmentShaderObject);
-
-	//	// delete vertex shader object
-	//	glDeleteShader(gVertexShaderObject);
-	//	gVertexShaderObject = 0;
-	//	// delete fragment shader object
-	//	glDeleteShader(gFragmentShaderObject);
-	//	gFragmentShaderObject = 0;
-
-	//	// delete shader program object
-	//	glDeleteProgram(gShaderProgramObject);
-	//	gShaderProgramObject = 0;
-	//}
 
 	if (monkeyModel)
 	{
