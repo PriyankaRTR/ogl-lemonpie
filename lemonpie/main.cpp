@@ -138,13 +138,6 @@ GLfloat gAngle = 0.0f;
 bool gbAnimate;
 bool gbLight;
 
-//for obj loading
-//std::vector<std::vector<float>> g_vertices;
-//std::vector<std::vector<float>> g_texture;
-//std::vector<std::vector<float>> g_normals;
-//std::vector<std::vector<int>> objIndices;
-//std::vector<std::vector<int>> g_face_tri, g_face_texture, g_face_normal;
-
 std::vector<float > g_test_obj_vertices;
 
 // Input obj file
@@ -221,7 +214,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	//Create Window
 	//Parallel to glutInitWindowSize(), glutInitWindowPosition() and glutCreateWindow() all three together
 	hwnd = CreateWindow(szClassName,
-		TEXT("OpenGL Programmable Pipeline Window"),
+		TEXT("OpenGL Lemonpie demo engine"),
 		WS_OVERLAPPEDWINDOW,
 		100,
 		100,
@@ -240,16 +233,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	SetFocus(hwnd);
 
 
-
-	//objDataLoader();
 	//initialize
 	initialize();
-
-	// monkey setup
-	//objLoader = new ();
-	//monkeyModel = OBJLoader::loadObjModel(OBJ_FILE_PATH, monkeyLoader);
-	/*initImGui(hwnd);*/
-
 
 	mouseOffset.x = 0.0;
 	mouseOffset.y = 0.0;
@@ -579,20 +564,8 @@ void initialize(void)
 	terrain1 = new Terrain(0, 0, terrainLoader);
 	terrain2 = new Terrain(-1, 0, terrainLoader);
 
-	/*terrainShader = new TerrainShader("Shaders/terrain.vs", "Shaders/terrain.fs");
-	terrainRenderer = new TerrainRenderer(terrainShader, gPerspectiveProjectionMatrix);*/
-	//LoadGLTextures(&gTexture_Kundali, MAKEINTRESOURCE(IDBITMAP_KUNDALI));
-	//LoadGLTextures(&gTexture_Stone, MAKEINTRESOURCE(IDBITMAP_STONE));
-	/*texture_terrain = new Texture(MAKEINTRESOURCE(IDBITMAP_GRASS));
-	if (texture_terrain->LoadGLTextures())
-	{
-		texture loaded successfully
-	}*/
-
 	// tree setup
 	treeModel = OBJLoader::loadObjModel(OBJ_FILE_PATH, treeLoader);
-	//staticShader = new StaticShader("Shaders/staticVertShader.vs", "Shaders/staticFragShader.fs");
-	//entityRenderer = new EntityRenderer(staticShader, gPerspectiveProjectionMatrix);
 	texture_tree = new Texture(MAKEINTRESOURCE(IDBITMAP_TREE));
 	if (texture_tree->LoadGLTextures_stb("tree.png"))
 	{
@@ -600,6 +573,7 @@ void initialize(void)
 	}		
 	texturedModelTree = new TexturedModel(treeModel, texture_tree);
 
+	// render 100 ramdomly placed trees
 	for(int i =0; i<100;i++)
 	{
 		float x_coord = (float)(rand()%100 -50);
@@ -607,11 +581,7 @@ void initialize(void)
 		entities.push_back(Entity(texturedModelTree, vec3(x_coord, 0.0f, z_coord), 0.0f, 0.0f, 0.0f, 1.0f));
 	}
 
-	//entities.push_back(Entity(texturedModelTree, vec3(3.0f, 0.0f, -10.0f), 0.0f, 0.0f, 0.0f, 1.0f));
-	//entities.push_back(Entity(texturedModelTree, vec3(0.0f, 2.0f, -10.0f), 0.0f, 0.0f, 0.0f, 1.0f));
 	renderer = new MasterRenderer();
-
-
 
 	// set background color
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // black
@@ -640,15 +610,6 @@ void renderEntityTest(void)
 	}
 	renderer->render(sun, camera);
 
-	//mat4 projMatrixTree = mat4::identity();
-	//Light lightForTree(vec3(1000.0f, 1000.0f, 1000.0f), vec3(1.0, 1.0, 1.0));
-	//staticShader->start();
-	//staticShader->loadLight(lightForTree);
-	//projMatrixTree = perspective(fov, (GLfloat)currentWidth / (GLfloat)currentHeight, 0.1f, 1000.0f);
-	//staticShader->loadProjectionMatrix(projMatrixTree);
-	//staticShader->loadViewMatrix(camera);
-	//entityRenderer->render(texturedModelTree);
-	//staticShader->stop();
 }
 
 void display(void)

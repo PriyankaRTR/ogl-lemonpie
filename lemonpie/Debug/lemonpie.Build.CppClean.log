@@ -1,10 +1,10 @@
 c:\projects\ogl-lemonpie\lemonpie\debug\vc143.pdb
-c:\projects\ogl-lemonpie\lemonpie\debug\staticshader.obj
+c:\projects\ogl-lemonpie\lemonpie\debug\skybox.obj
 c:\projects\ogl-lemonpie\lemonpie\debug\shader.obj
 c:\projects\ogl-lemonpie\lemonpie\debug\rawmodel.obj
 c:\projects\ogl-lemonpie\lemonpie\debug\objloader.obj
 c:\projects\ogl-lemonpie\lemonpie\debug\masterrenderer.obj
-c:\projects\ogl-lemonpie\lemonpie\debug\maintarrain.obj
+c:\projects\ogl-lemonpie\lemonpie\debug\main.obj
 c:\projects\ogl-lemonpie\lemonpie\debug\loader.obj
 c:\projects\ogl-lemonpie\lemonpie\debug\light.obj
 c:\projects\ogl-lemonpie\lemonpie\debug\imgui_wrapper.obj
@@ -24,7 +24,7 @@ c:\projects\ogl-lemonpie\lemonpie\debug\texture.obj
 c:\projects\ogl-lemonpie\lemonpie\debug\terrainshader.obj
 c:\projects\ogl-lemonpie\lemonpie\debug\terrainrenderer.obj
 c:\projects\ogl-lemonpie\lemonpie\debug\terrain.obj
-c:\projects\ogl-lemonpie\lemonpie\debug\skybox.obj
+c:\projects\ogl-lemonpie\lemonpie\debug\staticshader.obj
 c:\projects\ogl-lemonpie\lemonpie\debug\lemonpie.exe
 c:\projects\ogl-lemonpie\lemonpie\debug\lemonpie.pdb
 c:\projects\ogl-lemonpie\lemonpie\debug\texture.res

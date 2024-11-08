@@ -33,7 +33,7 @@
     <ClCompile Include="ImGui_Wrapper.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Loader.cpp" />
-    <ClCompile Include="mainTarrain.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="MasterRenderer.cpp" />
     <ClCompile Include="OBJLoader.cpp" />
     <ClCompile Include="RawModel.cpp" />
