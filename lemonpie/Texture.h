@@ -10,6 +10,9 @@
 #include<vector>
 #include<fstream>
 #include<string>
+// stb
+#include "stb_image.h"
+
 
 #define IDBITMAP_KUNDALI 100
 #define IDBITMAP_STONE   101
@@ -25,6 +28,7 @@ public:
 	~Texture();
 	GLuint getTextureId(void);
 	GLuint LoadGLTextures(void); 	// (GLuint* texture, TCHAR imageResourceId[]);
+	GLuint LoadGLTextures_stb(const char* filename);
 	void cleanUp(void);
 	void bindTexture(void);
 

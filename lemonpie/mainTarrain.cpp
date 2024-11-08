@@ -20,6 +20,7 @@
 #include "imgui_impl_win32.h"
 
 #include "CameraControl.h"
+#define STB_IMAGE_IMPLEMENTATION
 #include "Texture.h";
 #include "Loader.h"
 #include "RawModel.h"
@@ -593,7 +594,7 @@ void initialize(void)
 	//staticShader = new StaticShader("Shaders/staticVertShader.vs", "Shaders/staticFragShader.fs");
 	//entityRenderer = new EntityRenderer(staticShader, gPerspectiveProjectionMatrix);
 	texture_tree = new Texture(MAKEINTRESOURCE(IDBITMAP_TREE));
-	if (texture_tree->LoadGLTextures())
+	if (texture_tree->LoadGLTextures_stb("tree.png"))
 	{
 		// texture successfully loaded
 	}		

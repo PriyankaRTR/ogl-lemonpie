@@ -38,6 +38,7 @@
     <ClCompile Include="OBJLoader.cpp" />
     <ClCompile Include="RawModel.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="StaticShader.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="TerrainRenderer.cpp" />
@@ -66,7 +67,9 @@
     <ClInclude Include="OBJLoader.h" />
     <ClInclude Include="RawModel.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="Skybox.h" />
     <ClInclude Include="StaticShader.h" />
+    <ClInclude Include="stb_image.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="TerrainRenderer.h" />
     <ClInclude Include="TerrainShader.h" />
