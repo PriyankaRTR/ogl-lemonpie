@@ -9,9 +9,10 @@
 #include<vector>
 #include<fstream>
 #include<string>
-class Skybox
-{
+#include "Shader.h"
 
+class Skybox : public Shader
+{
 
 public:
 
@@ -19,6 +20,9 @@ public:
 	~Skybox();
 
 	GLuint loadTextureData(char* filename);
+
+	void bindAttributes(void) override;
+	void getAllUniformLocations(void) override;
 
 	
 

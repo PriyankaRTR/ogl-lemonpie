@@ -39,11 +39,14 @@
     <ClCompile Include="RawModel.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Skybox.cpp" />
+    <ClCompile Include="SkyBoxRenderer.cpp" />
+    <ClCompile Include="SkyBoxShader.cpp" />
     <ClCompile Include="StaticShader.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="TerrainRenderer.cpp" />
     <ClCompile Include="TerrainShader.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TextureData.cpp" />
     <ClCompile Include="TexturedModel.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -68,12 +71,15 @@
     <ClInclude Include="RawModel.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Skybox.h" />
+    <ClInclude Include="SkyBoxRenderer.h" />
+    <ClInclude Include="SkyBoxShader.h" />
     <ClInclude Include="StaticShader.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="TerrainRenderer.h" />
     <ClInclude Include="TerrainShader.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="TextureData.h" />
     <ClInclude Include="TexturedModel.h" />
   </ItemGroup>
   <ItemGroup>

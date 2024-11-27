@@ -9,6 +9,9 @@ MasterRenderer::MasterRenderer()
 	terrainShader = new TerrainShader("Shaders/terrain.vs", "Shaders/terrain.fs");
 	terrainRenderer = new TerrainRenderer(terrainShader, projectionMatrix);
 
+	skyBoxShader = new SkyBoxShader("Shaders/skyBox.vs", "Shaders/skyBox.fs");
+	skyBoxRenderer = new SkyBoxRenderer(skyBoxShader, skyBoxLoader, projectionMatrix);
+
 	terrainTexture = new Texture(MAKEINTRESOURCE(IDBITMAP_GRASS));
 	if (terrainTexture->LoadGLTextures())
 	{
@@ -46,7 +49,7 @@ void MasterRenderer::render(Light sun, CameraControl *camera)
 {
 	//glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
-	//prepare();
+	prepare();
 	shader->start();
 	shader->loadLight(sun);
 	shader->loadViewMatrix(camera);
@@ -58,8 +61,14 @@ void MasterRenderer::render(Light sun, CameraControl *camera)
 	terrainShader->loadViewMatrix(camera);
 	terrainRenderer->render(terrains, terrainTexture);
 	terrainShader->stop();
+
+	skyBoxShader->start();
+	skyBoxShader->loadViewMatrix(camera);
+	skyBoxRenderer->render(camera);
 	terrains.clear();
 	entities.clear();
+
+
 
 }
 

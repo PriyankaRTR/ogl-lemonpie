@@ -12,6 +12,8 @@
 
 #include"RawModel.h"
 
+
+
 class Loader
 {
 private:
@@ -35,6 +37,12 @@ public:
 	RawModel* loadToVAO(GLfloat* vArray, GLfloat* nArray, GLfloat* tArray, int* indices, int fSize);
 	// to load model with all data processed
 	RawModel* loadToVAO(GLfloat* vArray, GLfloat* nArray, GLfloat* tArray, int fSize);
+	// to load cubmap/ 3D dimentions
+	RawModel* loadToVAO(GLfloat* positions, int dimensions, int fSize);
+
+	//GLuint loadCubMap_stb(const char** textureFiles);
 	void cleanUp(void);
+
+	
 };
 

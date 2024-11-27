@@ -4,6 +4,8 @@
 #include "EntityRenderer.h"
 #include "TerrainShader.h"
 #include "TerrainRenderer.h"
+#include "SkyBoxShader.h"
+#include "SkyBoxRenderer.h"
 #include <map>
 #include "Entity.h"
 #include <list>
@@ -14,7 +16,7 @@ class MasterRenderer
 private:
 	const float FOV = 70.0f;
 	const float NEAR_PLANE = 0.1f;
-	const float FAR_PLANE = 1000.0f;
+	const float FAR_PLANE = 5000.0f;
 
 	vmath::mat4 projectionMatrix;
 
@@ -24,6 +26,10 @@ private:
 	TerrainShader* terrainShader;
 	TerrainRenderer* terrainRenderer;
 	Texture* terrainTexture;
+
+	SkyBoxShader* skyBoxShader;
+	SkyBoxRenderer* skyBoxRenderer;
+	Loader skyBoxLoader;
 
 	std::map<TexturedModel*, std::list<Entity>> entities;
 

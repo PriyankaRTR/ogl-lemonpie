@@ -12,6 +12,7 @@
 #include<string>
 // stb
 #include "stb_image.h"
+#include "TextureData.h"
 
 
 #define IDBITMAP_KUNDALI 100
@@ -25,14 +26,17 @@ class Texture
 public:
 	Texture();
 	Texture(char* RcId);
+	Texture(const char* filename[6]);
 	~Texture();
 	GLuint getTextureId(void);
 	GLuint LoadGLTextures(void); 	// (GLuint* texture, TCHAR imageResourceId[]);
 	GLuint LoadGLTextures_stb(const char* filename);
+	GLuint loadCubMap_stb(const char** textureFiles);
 	void cleanUp(void);
 	void bindTexture(void);
 
 private:
 	char* imageResourceId;
+	char* filename[6];
 	GLuint textureId;
 };  

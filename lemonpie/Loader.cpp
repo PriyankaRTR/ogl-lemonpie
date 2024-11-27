@@ -22,6 +22,13 @@ RawModel* Loader::loadToVAO(GLfloat* vArray, GLfloat* nArray, GLfloat* tArray, i
 	unbindVAO();
 	return (new RawModel(vaoID, fSize));
 }
+RawModel* Loader::loadToVAO(GLfloat* positions, int dimensions, int fSize)
+{
+	GLuint vaoID = createVAO();
+	storeDataInAttributeList(VDG_ATTRIBUTE_VERTEX, dimensions, positions, fSize);
+	unbindVAO();
+	return (new RawModel(vaoID, fSize));
+}
 
 
 GLuint Loader::createVAO(void)

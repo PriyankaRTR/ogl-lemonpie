@@ -2,8 +2,12 @@
 
 
 
-Texture::Texture()
+
+Texture::Texture(const char* filename[6])
 {
+	this->imageResourceId = 0;
+	this->textureId = 0;
+	textureId = loadCubMap_stb(filename);
 }
 
 Texture::Texture(char* RcId)
@@ -80,6 +84,47 @@ GLuint Texture::LoadGLTextures_stb(const char *filename)
 	textureId = textureID;
 	return textureID;
 }
+
+
+GLuint Texture::loadCubMap_stb(const char** textureFiles)
+{
+	GLuint texID;
+	glGenTextures(1, &texID);
+	//glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
+
+	//stbi_set_flip_vertically_on_load(true);
+
+	for (int i = 0; i < 6; i++)
+	{
+		const char* name = textureFiles[i];
+		int width, height, nrChannels;
+		unsigned char* buffer = stbi_load(textureFiles[i], &width, &height, &nrChannels, 0);
+
+		TextureData textureData(buffer, width, height);
+
+		if (buffer)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, textureData.getWidth(), textureData.getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, textureData.getBuffer());
+			// for some images the setting has to be GL_RGBA for appropriate texturing
+			// not all .png files have 4 channels, some have 3 channels only.
+			// In this case, for uniformity, I have converted all 6 files to .jpg and then it worked
+
+			stbi_image_free(buffer);
+		}
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+
+	return texID;
+}
+
+
 
 GLuint Texture::getTextureId(void)
 {

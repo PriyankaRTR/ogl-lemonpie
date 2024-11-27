@@ -19,8 +19,8 @@
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_win32.h"
 
-#include "CameraControl.h"
 #define STB_IMAGE_IMPLEMENTATION
+#include "CameraControl.h"
 #include "Texture.h";
 #include "Loader.h"
 #include "RawModel.h"
