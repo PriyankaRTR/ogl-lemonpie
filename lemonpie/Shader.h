@@ -3,10 +3,13 @@
 #include<string>
 #include<fstream>
 
+
 #include<gl/glew.h>
 #include<gl\GL.h>
 
 #include"vmath.h"
+#include"Logger.h"
+
 class Shader
 {
 private:
@@ -14,7 +17,7 @@ private:
 	GLuint programID;
 	GLuint vertexShaderID;
 	GLuint fragmentShaderID;
-	//FILE* fpLog;
+	static Logger logger;
 	
 
 	GLuint loadShader(const char* file, GLuint type);
@@ -31,7 +34,7 @@ public:
 //// check difference between pure virtual function in c++ and abstract method in java => it's the same. just different terminology :)
 	virtual void bindAttributes(void) = 0;
 	virtual void getAllUniformLocations(void) = 0;
-
+	
 
 protected:
 
@@ -45,5 +48,9 @@ protected:
 	void loadUint(GLuint location, GLuint value);
 	void bindAttribute(GLuint attribute, const char* variableName);
 	
+	
+
+
+
 };
 

@@ -27,7 +27,9 @@ GLuint Shader::loadShader(const char* file, GLuint type)
 				{
 					GLsizei written;
 					glGetShaderInfoLog(shaderObjId, iInfoLogLength, &written, szInfoLog);
-					//fprintf(fpLog, "%s Shader Compilation Log : %s\n", file, szInfoLog); //either keep a common file pointer and write into a same log file or use seperate file
+					logger.log(LOG_INFO, "Shader Compilation Log");
+					logger.log(LOG_ERROR, szInfoLog);
+					//either keep a common file pointer and write into a same log file or use seperate file
 					free(szInfoLog);
 					glDeleteShader(shaderObjId);
 					exit(0);
@@ -77,6 +79,7 @@ Shader::Shader(const char* fileVertexShader,const char* fileFragmentShader)//, F
 	vertexShaderID = 0;
 	fragmentShaderID = 0;
 	//fpLog = fp;
+	
 
 	vertexShaderID = loadShader(fileVertexShader, GL_VERTEX_SHADER);
 	fragmentShaderID = loadShader(fileFragmentShader, GL_FRAGMENT_SHADER);
@@ -88,12 +91,12 @@ Shader::Shader(const char* fileVertexShader,const char* fileFragmentShader)//, F
 	//bindAttributes();
 	glLinkProgram(programID);
 	glValidateProgram(programID);
+	//createLogFilePtr();
 	//getAllUniformLocations();
 }
 
 Shader::~Shader()
 {
-	
 }
 
 void Shader::start(void)
@@ -162,3 +165,9 @@ void Shader::bindAttribute(GLuint attribute, const char* variableName)
 {
 	glBindAttribLocation(programID, attribute, variableName);
 }
+
+// you always initialize staic member like this since memory is allocated only once.
+// Also avoid using pointers for object so that you don't have to manage memory free operation
+// refer this good link,
+// https://stackoverflow.com/questions/2769588/how-to-free-static-member-variable-in-c
+Logger Shader::logger("shadersLog.txt");

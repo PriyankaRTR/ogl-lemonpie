@@ -185,7 +185,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	//code
 	// create log file
-	if (fopen_s(&gpFile, "Log.txt", "w") != 0)
+	if (fopen_s(&gpFile, "winMainLog.txt", "w") != 0)
 	{
 		MessageBox(NULL, TEXT("Log File Can Not Be Created\nExitting ..."), TEXT("Error"), MB_OK | MB_TOPMOST | MB_ICONSTOP);
 		exit(0);
