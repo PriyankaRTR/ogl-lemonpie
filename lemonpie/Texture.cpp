@@ -10,11 +10,19 @@ Texture::Texture(const char* filename[6])
 	textureId = loadCubMap_stb(filename);
 }
 
+Texture::Texture()
+{
+	this->imageResourceId = 0;
+	this->textureId = 0;
+}
+
 Texture::Texture(char* RcId)
 {
 	imageResourceId = RcId;
 	textureId = 0;
 }
+
+
 
 Texture::~Texture()
 {
@@ -122,6 +130,15 @@ GLuint Texture::loadCubMap_stb(const char** textureFiles)
 
 
 	return texID;
+}
+
+Texture::heightMapData *Texture::loadHeightMap_stb(const char* heightMapFile)
+{
+	
+	//unsigned char* data;
+
+	hmData.data = stbi_load(heightMapFile, &hmData.w, &hmData.h, &hmData.channels, 0);
+	return &hmData;
 }
 
 

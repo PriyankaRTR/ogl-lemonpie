@@ -4,12 +4,18 @@
 #include <vector>
 #include"RawModel.h"
 #include"Loader.h"
+#include"Texture.h"
 
 class Terrain
 {
 private:
 	const float SIZE = 800;
-	const int VERTEX_COUNT = 128;
+	
+	const float MAX_HEIGHT = 20.0;
+	const float MAX_PIXEL_COLOR = 256.0 * 256.0 * 256.0;
+
+	Texture* texture;
+	Texture::heightMapData* hmImageData;
 	float* vertices;
 	float* normals;
 	float* textureCoords;
@@ -21,8 +27,9 @@ private:
 	RawModel* generateTerrain(Loader& loader);
 	RawModel* model;
 
+	
 public:
-	Terrain(int gridX, int gridZ, Loader& loader);
+	Terrain(int gridX, int gridZ, Loader& loader, const char* heightMap);
 	~Terrain();
 	
 	RawModel* getModel(void);
@@ -37,6 +44,8 @@ public:
 
 	float getX(void);
 	float getZ(void);
+
+	float getHeight(int x, int z);
 
 
 };

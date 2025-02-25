@@ -561,8 +561,8 @@ void initialize(void)
 
 
 	// terrain setup
-	terrain1 = new Terrain(0, 0, terrainLoader);
-	terrain2 = new Terrain(-1, 0, terrainLoader);
+	terrain1 = new Terrain(0, 0, terrainLoader, "heightmap.png");
+	terrain2 = new Terrain(-1, 0, terrainLoader, "heightmap.png");
 
 	// tree setup
 	treeModel = OBJLoader::loadObjModel(OBJ_FILE_PATH, treeLoader);

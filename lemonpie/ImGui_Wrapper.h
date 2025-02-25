@@ -60,6 +60,7 @@ public:
 	
 	// write get/sets here
 	void setMatrix(vmath::mat4& newMatrix);
+	void setLogString(char* log);
 	float getInputCameraAngle(void);
 	float getDeltaTime(void);
 	//void getDeltaMouse(mouseXYOffset &structMouseOffset);

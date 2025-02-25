@@ -27,6 +27,7 @@ public:
 	Texture();
 	Texture(char* RcId);
 	Texture(const char* filename[6]);
+	Texture(const char* filename);
 	~Texture();
 	GLuint getTextureId(void);
 	GLuint LoadGLTextures(void); 	// (GLuint* texture, TCHAR imageResourceId[]);
@@ -34,6 +35,20 @@ public:
 	GLuint loadCubMap_stb(const char** textureFiles);
 	void cleanUp(void);
 	void bindTexture(void);
+
+	typedef struct
+	{
+		int w;
+		int h;
+		int channels;
+		unsigned char* data;
+
+	}heightMapData;
+
+
+	heightMapData* loadHeightMap_stb(const char* heightMapFile);
+
+	heightMapData hmData;
 
 private:
 	char* imageResourceId;
